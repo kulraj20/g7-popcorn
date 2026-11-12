@@ -3,21 +3,18 @@ import { ThemeProvider, CssBaseline, Box, Stack } from "@mui/material";
 import { theme } from "./components/theme";
 import { MovieCard } from "./components/MovieCard";
 import { UserProfileCard } from "./components/UserProfileCard";
-  
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
-import Parse from 'parse';
 
-export default function App() {
-  return <></>;
+import heroImg from "./assets/hero.png";
+import reactLogo from "./assets/react.svg";
+import viteLogo from "./assets/vite.svg";
+import "./App.css";
+import Parse from "parse";
 
 Parse.serverURL = "https://parseapi.back4app.com/"; // your PARSE_SERVER_URL
 Parse.initialize("YOUR_APP_ID", "YOUR_JAVASCRIPT_KEY");
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [count, setCount] = useState(0);
 
   return (
     <>
@@ -128,5 +125,5 @@ function App() {
       <div className="ticks"></div>
       <section id="spacer"></section>
     </>
-  )
+  );
 }
