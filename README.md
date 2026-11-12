@@ -7,6 +7,13 @@ npm install
 npm run dev
 ```
 
+## Back4App setup
+
+1. Create a Back4App backend app and open **App Settings → Security & Keys**.
+2. Copy `.env.example` to `.env.local` if the local file does not exist.
+3. Fill in `VITE_BACK4APP_APPLICATION_ID` and `VITE_BACK4APP_JAVASCRIPT_KEY` in `.env.local`.
+4. Run `npm install` and `npm run dev`. Restart the dev server after changing environment variables.
+
 ## React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
