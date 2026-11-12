@@ -8,10 +8,6 @@ import heroImg from "./assets/hero.png";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "./assets/vite.svg";
 import "./App.css";
-import Parse from "parse";
-
-Parse.serverURL = "https://parseapi.back4app.com/"; // your PARSE_SERVER_URL
-Parse.initialize("YOUR_APP_ID", "YOUR_JAVASCRIPT_KEY");
 
 export default function App() {
   const [count, setCount] = useState(0);
