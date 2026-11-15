@@ -6,7 +6,7 @@ import {
   Typography,
   TextField,
 } from "@mui/material";
-import { COLORS, FONTS } from "../theme";
+import { COLORS, FONTS } from "./theme";
 
 export const CustomMenu = ({ items = [], onSelect, sx }) => (
   <Paper

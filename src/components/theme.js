@@ -28,7 +28,7 @@ export const theme = createTheme({
       contrastText: COLORS.cream,
     },
     background: {
-      default: COLORS.cream,
+      default: COLORS.darkGray,
       paper: COLORS.darkGray,
     },
     text: {

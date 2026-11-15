@@ -1,5 +1,4 @@
-import Parse from 'parse'
-
+import Parse from "parse";
 const applicationId = import.meta.env.VITE_BACK4APP_APPLICATION_ID
 const javascriptKey = import.meta.env.VITE_BACK4APP_JAVASCRIPT_KEY
 
