@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Alert, Box, CssBaseline, ThemeProvider } from "@mui/material";
 import { AuthForm } from "./components/AuthForm";
 import { UserProfileCard } from "./components/UserProfileCard";
+import { WatchList } from "./components/WatchList";
 import { theme } from "./components/theme";
 import { getBack4App, isBack4AppConfigured } from "./lib/back4app";
 
@@ -40,6 +41,7 @@ export default function App() {
                     onSignOut={handleSignOut}
                 />
                 {signOutError && <Alert severity="error">{signOutError}</Alert>}
+                <WatchList user={user} />
               </>
           ) : (
               <AuthForm onAuthenticated={setUser} />

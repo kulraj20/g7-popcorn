@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import {
   Card,
   CardContent,
@@ -30,6 +29,7 @@ export const MovieCard = ({
   moveOptions = [],
   selectedMove = "",
   onMoveChange,
+  readOnly = false,
   sx,
 }) => {
   return (
@@ -96,74 +96,78 @@ export const MovieCard = ({
             }
           />
 
-          {/* Action Buttons */}
-          <Stack direction="row" spacing={2}>
-            <PrimaryButton fullWidth onClick={onEdit}>
-              {editLabel}
-            </PrimaryButton>
-            <DeleteButton fullWidth onClick={onDelete}>
-              {deleteLabel}
-            </DeleteButton>
-          </Stack>
+          {!readOnly && (
+            <>
+              {/* Action Buttons */}
+              <Stack direction="row" spacing={2}>
+                <PrimaryButton fullWidth onClick={onEdit}>
+                  {editLabel}
+                </PrimaryButton>
+                <DeleteButton fullWidth onClick={onDelete}>
+                  {deleteLabel}
+                </DeleteButton>
+              </Stack>
 
-          {/* "Move to..." Select Dropdown */}
-          <Select
-            value={selectedMove}
-            displayEmpty
-            onChange={(e) => onMoveChange && onMoveChange(e.target.value)}
-            size="small"
-            IconComponent={(props) => (
-              <ArrowDropDownIcon
-                {...props}
-                sx={{ color: `${COLORS.gold} !important` }} // #C9A45C[cite: 1, 2]
-              />
-            )}
-            sx={{
-              backgroundColor: COLORS.black, // #101012[cite: 1, 2]
-              color: COLORS.gold, // #C9A45C[cite: 1, 2]
-              py: 0.5,
-              ".MuiOutlinedInput-notchedOutline": {
-                borderColor: COLORS.gold,
-              },
-              "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: COLORS.gold,
-              },
-              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: COLORS.gold,
-              },
-            }}
-            MenuProps={{
-              PaperProps: {
-                sx: {
-                  backgroundColor: COLORS.cream, // #F5F0E8[cite: 1, 2]
-                  color: COLORS.darkGray, // #242327[cite: 1, 2]
-                  mt: 0.5,
-                },
-              },
-            }}
-          >
-            <MenuItem value="" disabled>
-              <Typography
-                variant="body1"
-                sx={{ color: COLORS.gold, fontWeight: FONTS.weights.regular }}
+              {/* "Move to..." Select Dropdown */}
+              <Select
+                value={selectedMove}
+                displayEmpty
+                onChange={(e) => onMoveChange && onMoveChange(e.target.value)}
+                size="small"
+                IconComponent={(props) => (
+                  <ArrowDropDownIcon
+                    {...props}
+                    sx={{ color: `${COLORS.gold} !important` }} // #C9A45C[cite: 1, 2]
+                  />
+                )}
+                sx={{
+                  backgroundColor: COLORS.black, // #101012[cite: 1, 2]
+                  color: COLORS.gold, // #C9A45C[cite: 1, 2]
+                  py: 0.5,
+                  ".MuiOutlinedInput-notchedOutline": {
+                    borderColor: COLORS.gold,
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: COLORS.gold,
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: COLORS.gold,
+                  },
+                }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      backgroundColor: COLORS.cream, // #F5F0E8[cite: 1, 2]
+                      color: COLORS.darkGray, // #242327[cite: 1, 2]
+                      mt: 0.5,
+                    },
+                  },
+                }}
               >
-                {movePlaceholder}
-              </Typography>
-            </MenuItem>
-            {moveOptions.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color: COLORS.darkGray,
-                    fontWeight: FONTS.weights.regular,
-                  }}
-                >
-                  {option.label}
-                </Typography>
-              </MenuItem>
-            ))}
-          </Select>
+                <MenuItem value="" disabled>
+                  <Typography
+                    variant="body1"
+                    sx={{ color: COLORS.gold, fontWeight: FONTS.weights.regular }}
+                  >
+                    {movePlaceholder}
+                  </Typography>
+                </MenuItem>
+                {moveOptions.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: COLORS.darkGray,
+                        fontWeight: FONTS.weights.regular,
+                      }}
+                    >
+                      {option.label}
+                    </Typography>
+                  </MenuItem>
+                ))}
+              </Select>
+            </>
+          )}
         </Stack>
       </CardContent>
     </Card>
