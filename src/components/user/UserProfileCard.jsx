@@ -1,8 +1,8 @@
 import React from "react";
 import { Paper, Stack, Avatar, Typography } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
-import { COLORS, FONTS } from "./theme";
-import { NormalButton } from "./Buttons";
+import { COLORS, FONTS } from "../theme";
+import { NormalButton } from "../Buttons";
 
 export const UserProfileCard = ({
   name,

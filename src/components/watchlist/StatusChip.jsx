@@ -1,6 +1,6 @@
 import React from "react";
 import { Chip, Typography } from "@mui/material";
-import { COLORS, FONTS } from "./theme";
+import { COLORS, FONTS } from "../theme";
 
 export const StatusChip = ({ label, sx, ...props }) => (
   <Chip

@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, Typography } from "@mui/material";
-import { COLORS, FONTS } from "../theme";
+import { COLORS, FONTS } from "./theme";
 
 export const CustomLink = ({ children, href = "#", sx, ...props }) => (
   <Link

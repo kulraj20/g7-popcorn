@@ -10,8 +10,8 @@ import {
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import { COLORS, FONTS } from "./theme";
-import { PrimaryButton, DeleteButton } from "./Buttons";
+import { COLORS, FONTS } from "../theme";
+import { PrimaryButton, DeleteButton } from "../Buttons";
 import { StatusChip } from "./StatusChip";
 
 export const MovieCard = ({

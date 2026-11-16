@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Alert, Box, CssBaseline, ThemeProvider } from "@mui/material";
-import { AuthForm } from "./components/AuthForm";
-import { UserProfileCard } from "./components/UserProfileCard";
-import { WatchList } from "./components/WatchList";
+import { AuthForm } from "./components/user/AuthForm";
+import { UserProfileCard } from "./components/user/UserProfileCard";
+import { WatchList } from "./components/watchlist/WatchList";
 import { theme } from "./components/theme";
 import { getBack4App, isBack4AppConfigured } from "./lib/back4app";
 

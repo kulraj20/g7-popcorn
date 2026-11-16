@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Alert, Stack, Typography } from "@mui/material";
 import LocalMoviesIcon from "@mui/icons-material/LocalMovies";
-import { NormalButton, PrimaryButton } from "./Buttons";
-import { CustomTextField } from "./CustomInputs";
-import { COLORS } from "./theme";
-import { getBack4App } from "../lib/back4app";
+import { NormalButton, PrimaryButton } from "../Buttons";
+import { CustomTextField } from "../CustomInputs";
+import { COLORS } from "../theme";
+import { getBack4App } from "../../lib/back4app";
 
 export function AuthForm({ onAuthenticated }) {
     const [isSignUp, setIsSignUp] = useState(false);

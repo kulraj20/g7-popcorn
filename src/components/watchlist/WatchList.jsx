@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Alert, CircularProgress, Stack, Typography } from "@mui/material";
 import { MovieCard } from "./MovieCard";
-import { COLORS } from "./theme";
-import { getWatchlistMovies } from "../lib/watchlist";
+import { COLORS } from "../theme";
+import { getWatchlistMovies } from "../../lib/watchlist";
 
 export function WatchList({ user }) {
   const [movies, setMovies] = useState([]);
