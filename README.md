@@ -1,5 +1,7 @@
 # g7-popcorn
 
+This file is user oriented Readme for Popcorn app - Todo list for movies, which was created as project on ITU Copenhagen of Team 7 for subject Technical-Interactiction Design in 2026. To see the programming documentation see [this file](/docs/_documenation.md).
+
 ## Run locally
 
 ```sh
