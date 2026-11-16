@@ -1,4 +1,7 @@
 import { useState } from "react";
+import AddMovieForm from "./components/AddMovieForm.jsx";
+import "./App.css";
+import { saveMovie } from "./services/parseClient.js";
 import { Alert, Box, CssBaseline, ThemeProvider } from "@mui/material";
 import { AuthForm } from "./components/AuthForm";
 import { UserProfileCard } from "./components/UserProfileCard";
@@ -26,6 +29,9 @@ export default function App() {
       setSignOutError("Couldn’t sign out. Try again.");
     }
   }
+    const [showForm, setShowForm] = useState(false);
+
+  const handleSaveMovie = (movie) => saveMovie(movie);
 
   return (
       <ThemeProvider theme={theme}>
@@ -45,6 +51,22 @@ export default function App() {
               <AuthForm onAuthenticated={setUser} />
           )}
         </Box>
+
+      <button
+        type="button"
+        className="primary btn todo-action-button"
+        onClick={() => setShowForm(true)}
+      >
+        + Add Movie
+      </button>
+
+      {showForm && (
+        <AddMovieForm
+          onClose={() => setShowForm(false)}
+          onSave={handleSaveMovie}
+        />
+      )}
       </ThemeProvider>
+
   );
 }
