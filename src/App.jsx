@@ -1,12 +1,15 @@
 import { useState } from "react";
 import AddMovieForm from "./components/AddMovieForm.jsx";
 import "./App.css";
-import { saveMovie } from "./services/parseClient.js";
 import { Alert, Box, CssBaseline, ThemeProvider } from "@mui/material";
 import { AuthForm } from "./components/AuthForm";
 import { UserProfileCard } from "./components/UserProfileCard";
 import { theme } from "./components/theme";
-import { getBack4App, isBack4AppConfigured } from "./lib/back4app";
+import {
+  getBack4App,
+  isBack4AppConfigured,
+  saveMovieToWatchlist,
+} from "./lib/back4app";
 
 export default function App() {
   const [user, setUser] = useState(() => {
@@ -17,6 +20,7 @@ export default function App() {
     return null;
   });
   const [signOutError, setSignOutError] = useState("");
+  const [showForm, setShowForm] = useState(false);
 
   async function handleSignOut() {
     setSignOutError("");
@@ -29,36 +33,37 @@ export default function App() {
       setSignOutError("Couldn’t sign out. Try again.");
     }
   }
-    const [showForm, setShowForm] = useState(false);
 
-  const handleSaveMovie = (movie) => saveMovie(movie);
+  const handleSaveMovie = (movieData) => saveMovieToWatchlist(user, movieData);
 
   return (
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
 
-        <Box component="main" sx={{ width: "100%", maxWidth: 480, mx: "auto", p: 3 }}>
-          {user ? (
-              <>
-                <UserProfileCard
-                    name={user.get("name")}
-                    email={user.get("email")}
-                    onSignOut={handleSignOut}
-                />
-                {signOutError && <Alert severity="error">{signOutError}</Alert>}
-              </>
-          ) : (
-              <AuthForm onAuthenticated={setUser} />
-          )}
-        </Box>
-
-      <button
-        type="button"
-        className="primary btn todo-action-button"
-        onClick={() => setShowForm(true)}
+      <Box
+        component="main"
+        sx={{ width: "100%", maxWidth: 480, mx: "auto", p: 3 }}
       >
-        + Add Movie
-      </button>
+        {user ? (
+          <>
+            <UserProfileCard
+              name={user.get("name")}
+              email={user.get("email")}
+              onSignOut={handleSignOut}
+            />
+            {signOutError && <Alert severity="error">{signOutError}</Alert>}
+            <button
+              type="button"
+              className="primary btn todo-action-button"
+              onClick={() => setShowForm(true)}
+            >
+              + Add Movie
+            </button>
+          </>
+        ) : (
+          <AuthForm onAuthenticated={setUser} />
+        )}
+      </Box>
 
       {showForm && (
         <AddMovieForm
@@ -66,7 +71,6 @@ export default function App() {
           onSave={handleSaveMovie}
         />
       )}
-      </ThemeProvider>
-
+    </ThemeProvider>
   );
 }
