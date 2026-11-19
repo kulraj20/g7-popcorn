@@ -7,8 +7,10 @@ import { getOrCreateSharedLink } from "../lib/sharing";
 
 export function ShareWatchlistPanel({
   user,
+  nextMovie = null,
   onAddMovieClick,
   onPreviewShared,
+  onGoToWatchlist,
 }) {
   const [shareData, setShareData] = useState({ token: "", shareUrl: "" });
   const [loading, setLoading] = useState(false);
@@ -60,6 +62,13 @@ export function ShareWatchlistPanel({
     }
   }
 
+  function handleGoToWatchlistClick(e) {
+    e.preventDefault();
+    if (onGoToWatchlist) {
+      onGoToWatchlist();
+    }
+  }
+
   return (
     <Paper
       elevation={0}
@@ -72,18 +81,29 @@ export function ShareWatchlistPanel({
         textAlign: "left",
       }}
     >
-      <Stack
-        direction={{ xs: "column", md: "row" }}
-        spacing={3}
+      <Box
         sx={{
-          justifyContent: "space-between",
-          alignItems: { xs: "stretch", md: "center" },
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", md: "1.2fr auto 1fr" },
+          gap: 3,
+          alignItems: "center",
         }}
       >
-        <Stack spacing={1.5} sx={{ flex: 1 }}>
+        <Stack spacing={1}>
           <Typography
-            variant="h2"
-            sx={{ color: COLORS.cream, fontWeight: FONTS.weights.bold }}
+            variant="caption"
+            sx={{ color: COLORS.gold, textTransform: "uppercase" }}
+          >
+            Dashboard
+          </Typography>
+          <Typography
+            variant="h1"
+            sx={{
+              color: COLORS.cream,
+              fontWeight: FONTS.weights.bold,
+              fontSize: { xs: "30px", md: "38px" },
+              lineHeight: 1.15,
+            }}
           >
             What are you watching next?
           </Typography>
@@ -97,15 +117,52 @@ export function ShareWatchlistPanel({
           </Box>
         </Stack>
 
-        <Stack spacing={1.5} sx={{ minWidth: { xs: "100%", md: 220 } }}>
+        <Stack
+          spacing={1.5}
+          sx={{
+            minWidth: { xs: "100%", md: 210 },
+            flexDirection: { xs: "column-reverse", md: "column" },
+          }}
+        >
           <NormalButton onClick={handleCopyShareLink} disabled={loading}>
-            {loading ? "Generating link..." : "Share Watchlist"}
+            {loading ? "Generating..." : "Share Watchlist"}
           </NormalButton>
-          {onAddMovieClick && (
-            <PrimaryButton onClick={onAddMovieClick}>+ Add Movie</PrimaryButton>
-          )}
+          <PrimaryButton onClick={onAddMovieClick}>+ Add Movie</PrimaryButton>
         </Stack>
-      </Stack>
+        <Box
+          sx={{
+            border: `1.5px dashed ${COLORS.taupe}88`,
+            borderRadius: 2,
+            p: 2,
+            backgroundColor: COLORS.black,
+          }}
+        >
+          <Stack spacing={1}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: COLORS.gold,
+                fontWeight: FONTS.weights.bold,
+              }}
+            >
+              Your Next Watchlist
+            </Typography>
+            <Typography variant="caption" sx={{ color: COLORS.cream }}>
+              {nextMovie
+                ? `Up next: ${nextMovie.title}${nextMovie.genre ? ` (${nextMovie.genre})` : ""}`
+                : "No movies queued yet. Add a title to start planning your next movie night."}
+            </Typography>
+            <Box sx={{ pt: 0.5 }}>
+              <CustomLink
+                href="#watchlist-board"
+                onClick={handleGoToWatchlistClick}
+              >
+                Go to Watchlist
+              </CustomLink>
+            </Box>
+          </Stack>
+        </Box>
+      </Box>
 
       {error && (
         <Alert severity="error" sx={{ mt: 2 }}>
@@ -115,7 +172,7 @@ export function ShareWatchlistPanel({
 
       <Snackbar
         open={copiedOpen}
-        autoHideDuration={3000}
+        autoHideDuration={3500}
         onClose={() => setCopiedOpen(false)}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >

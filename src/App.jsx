@@ -1,12 +1,22 @@
 import { useState, useEffect } from "react";
-import "./App.css";
-import { Alert, Box, CssBaseline, Stack, ThemeProvider } from "@mui/material";
+import {
+  Alert,
+  Box,
+  CssBaseline,
+  IconButton,
+  Menu,
+  MenuItem,
+  Stack,
+  ThemeProvider,
+  Typography,
+} from "@mui/material";
+import LocalMoviesIcon from "@mui/icons-material/LocalMovies";
+import MenuIcon from "@mui/icons-material/Menu";
 import { AuthForm } from "./components/AuthForm";
 import { UserProfileCard } from "./components/UserProfileCard";
-import { ShareWatchlistPanel } from "./components/ShareWatchlistPanel";
-import { SharedWatchlistPage } from "./pages/SharedWatchlistPage";
 import { WatchlistSection } from "./components/WatchlistSection";
-import { theme } from "./components/theme";
+import { SharedWatchlistPage } from "./pages/SharedWatchlistPage";
+import { COLORS, FONTS, theme } from "./components/theme";
 import { getBack4App, isBack4AppConfigured } from "./lib/back4app";
 
 export default function App() {
@@ -14,10 +24,10 @@ export default function App() {
     if (isBack4AppConfigured) {
       return getBack4App().User.current();
     }
-
     return null;
   });
   const [signOutError, setSignOutError] = useState("");
+  const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
 
   const [shareToken, setShareToken] = useState(() => {
     const params = new URLSearchParams(window.location.search);
@@ -46,6 +56,7 @@ export default function App() {
 
   async function handleSignOut() {
     setSignOutError("");
+    setMobileMenuAnchor(null);
 
     try {
       const Parse = getBack4App();
@@ -60,25 +71,6 @@ export default function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
 
-      <Box
-        component="main"
-        sx={{ width: "100%", maxWidth: 480, mx: "auto", p: 3 }}
-      >
-        {user ? (
-          <Stack spacing={2.5}>
-            <UserProfileCard
-              name={user.get("name")}
-              email={user.get("email")}
-              onSignOut={handleSignOut}
-            />
-            {signOutError && <Alert severity="error">{signOutError}</Alert>}
-            <WatchlistSection key={user.id} user={user} />
-          </Stack>
-        ) : (
-          <AuthForm onAuthenticated={setUser} />
-        )}
-      </Box>
-
       {shareToken ? (
         <SharedWatchlistPage
           token={shareToken}
@@ -86,30 +78,168 @@ export default function App() {
           onGoToMyWatchlist={closeSharedView}
           onSignOut={handleSignOut}
         />
-      ) : (
+      ) : !user ? (
         <Box
           component="main"
-          sx={{ width: "100%", maxWidth: 960, mx: "auto", p: 3 }}
+          sx={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: COLORS.black,
+            p: 3,
+          }}
         >
-          {user ? (
-            <Stack spacing={3} alignItems="flex-end">
-              <UserProfileCard
-                name={user.get("name")}
-                email={user.get("email")}
-                onSignOut={handleSignOut}
-              />
-              {signOutError && <Alert severity="error">{signOutError}</Alert>}
+          <Box sx={{ width: "100%", maxWidth: 440 }}>
+            <AuthForm onAuthenticated={setUser} />
+          </Box>
+        </Box>
+      ) : (
+        <Box
+          sx={{
+            minHeight: "100vh",
+            display: "flex",
+            flexDirection: "column",
+            backgroundColor: COLORS.black,
+            color: COLORS.cream,
+          }}
+        >
+          <Box
+            component="header"
+            sx={{
+              borderBottom: `1px solid ${COLORS.taupe}33`,
+              backgroundColor: COLORS.darkGray,
+              px: { xs: 2, md: 4 },
+              py: 1.25,
+            }}
+          >
+            <Stack
+              direction="row"
+              sx={{
+                justifyContent: "space-between",
+                alignItems: "center",
+                maxWidth: 1200,
+                mx: "auto",
+                width: "100%",
+              }}
+            >
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{ alignItems: "center", color: COLORS.gold }}
+              >
+                <LocalMoviesIcon sx={{ fontSize: 32 }} />
+                <Typography variant="h2" component="span">
+                  Popcorn
+                </Typography>
+              </Stack>
 
-              <ShareWatchlistPanel
+              <Box sx={{ display: { xs: "none", md: "block" } }}>
+                <UserProfileCard
+                  name={user.get("name")}
+                  email={user.get("email")}
+                  onSignOut={handleSignOut}
+                  sx={{ p: 0.75, width: "auto" }}
+                />
+              </Box>
+
+              <Box sx={{ display: { xs: "block", md: "none" } }}>
+                <IconButton
+                  onClick={(e) => setMobileMenuAnchor(e.currentTarget)}
+                  aria-label="Open menu"
+                  sx={{
+                    color: COLORS.cream,
+                    border: `1px solid ${COLORS.taupe}66`,
+                    borderRadius: 1.5,
+                  }}
+                >
+                  <MenuIcon />
+                </IconButton>
+                <Menu
+                  anchorEl={mobileMenuAnchor}
+                  open={Boolean(mobileMenuAnchor)}
+                  onClose={() => setMobileMenuAnchor(null)}
+                  slotProps={{
+                    paper: {
+                      sx: {
+                        backgroundColor: COLORS.cream,
+                        color: COLORS.darkGray,
+                        minWidth: 200,
+                      },
+                    },
+                  }}
+                >
+                  <MenuItem disabled>
+                    <Stack>
+                      <Typography
+                        variant="caption"
+                        sx={{ fontWeight: FONTS.weights.bold }}
+                      >
+                        {user.get("name")}
+                      </Typography>
+                      <Typography variant="caption" sx={{ fontSize: "14px" }}>
+                        {user.get("email")}
+                      </Typography>
+                    </Stack>
+                  </MenuItem>
+                  <MenuItem onClick={handleSignOut}>Sign out</MenuItem>
+                </Menu>
+              </Box>
+            </Stack>
+          </Box>
+
+          <Box
+            component="main"
+            sx={{
+              flexGrow: 1,
+              width: "100%",
+              maxWidth: 1200,
+              mx: "auto",
+              px: { xs: 2, md: 4 },
+              py: { xs: 3, md: 4 },
+            }}
+          >
+            <Stack spacing={3}>
+              {signOutError && <Alert severity="error">{signOutError}</Alert>}
+              <WatchlistSection
+                key={user.id}
                 user={user}
                 onPreviewShared={(token) => openSharedView(token)}
               />
             </Stack>
-          ) : (
-            <Box sx={{ maxWidth: 480, mx: "auto" }}>
-              <AuthForm onAuthenticated={setUser} />
-            </Box>
-          )}
+          </Box>
+
+          <Box
+            component="footer"
+            sx={{
+              borderTop: `1px solid ${COLORS.taupe}33`,
+              backgroundColor: COLORS.darkGray,
+              px: { xs: 2, md: 4 },
+              py: 2.5,
+            }}
+          >
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={1}
+              sx={{
+                justifyContent: "space-between",
+                alignItems: { xs: "flex-start", sm: "center" },
+                maxWidth: 1200,
+                mx: "auto",
+                width: "100%",
+              }}
+            >
+              <Typography
+                variant="body1"
+                sx={{ color: COLORS.gold, fontWeight: FONTS.weights.bold }}
+              >
+                Popcorn
+              </Typography>
+              <Typography variant="caption" sx={{ color: COLORS.taupe }}>
+                Track, rate, and share your movie watchlist.
+              </Typography>
+            </Stack>
+          </Box>
         </Box>
       )}
     </ThemeProvider>

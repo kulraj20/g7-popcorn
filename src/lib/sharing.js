@@ -1,4 +1,4 @@
-import { getBack4App } from "./back4app";
+import { getBack4App, getOrCreateWatchlist } from "./back4app";
 
 function generateSecureToken() {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
@@ -12,36 +12,15 @@ function generateSecureToken() {
   ).join("");
 }
 
-export async function getOrCreateUserWatchlist(user) {
-  const Parse = getBack4App();
-  const Watchlist = Parse.Object.extend("Watchlist");
-
-  const query = new Parse.Query(Watchlist);
-  query.equalTo("user_id", user);
-  let watchlist = await query.first();
-
-  const ownerName = user.get("name") || user.get("username") || "User";
-  const expectedTitle = `${ownerName}'s Watchlist`;
-
-  if (!watchlist) {
-    watchlist = new Watchlist();
-    watchlist.set("user_id", user);
-    watchlist.set("name", expectedTitle);
-
-    const acl = new Parse.ACL(user);
-    acl.setPublicReadAccess(true);
-    acl.setPublicWriteAccess(false);
-    watchlist.setACL(acl);
-
-    await watchlist.save();
-  }
-
-  return watchlist;
-}
-
 export async function getOrCreateSharedLink(user) {
   const Parse = getBack4App();
-  const watchlist = await getOrCreateUserWatchlist(user);
+  const watchlist = await getOrCreateWatchlist(user);
+
+  if (!watchlist.get("name")) {
+    const ownerName = user.get("name") || user.get("username") || "User";
+    watchlist.set("name", `${ownerName}'s Watchlist`);
+    await watchlist.save();
+  }
 
   const SharedLink = Parse.Object.extend("SharedLink");
   const query = new Parse.Query(SharedLink);
@@ -91,7 +70,7 @@ export async function fetchSharedWatchlistByToken(token) {
 
   const Movie = Parse.Object.extend("Movie");
   const movieQuery = new Parse.Query(Movie);
-  movieQuery.equalTo("watchlist_id", watchlist);
+  movieQuery.equalTo("Watchlist_id", watchlist);
   movieQuery.descending("createdAt");
 
   const movieObjects = await movieQuery.find();

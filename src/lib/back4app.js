@@ -22,6 +22,13 @@ export function getBack4App() {
   return Parse;
 }
 
+function createOwnerWritePublicReadACL(ParseInstance, currentUser) {
+  const acl = new ParseInstance.ACL(currentUser);
+  acl.setPublicReadAccess(true);
+  acl.setPublicWriteAccess(false);
+  return acl;
+}
+
 function mapMovieObject(movie) {
   return {
     id: movie.id,
@@ -52,9 +59,15 @@ export async function getOrCreateWatchlist(user) {
     return existingWatchlist;
   }
 
+  const ownerName =
+    currentUser.get("name") || currentUser.get("username") || "User";
+
   const newWatchlist = new Watchlist();
   newWatchlist.set("user", currentUser);
-  newWatchlist.setACL(new ParseInstance.ACL(currentUser));
+  newWatchlist.set("name", `${ownerName}'s Watchlist`);
+  newWatchlist.setACL(
+    createOwnerWritePublicReadACL(ParseInstance, currentUser),
+  );
 
   return await newWatchlist.save();
 }
@@ -104,7 +117,7 @@ export async function saveMovieToWatchlist(user, movieData, movieId = null) {
     const watchlist = await getOrCreateWatchlist(currentUser);
     movie = new Movie();
     movie.set("Watchlist_id", watchlist);
-    movie.setACL(new ParseInstance.ACL(currentUser));
+    movie.setACL(createOwnerWritePublicReadACL(ParseInstance, currentUser));
   }
 
   movie.set("title", movieData.title);
@@ -113,6 +126,7 @@ export async function saveMovieToWatchlist(user, movieData, movieId = null) {
   movie.set("runtime_min", movieData.runtime || "");
   movie.set("status", movieData.status);
   movie.set("recommended_by", movieData.recommendedBy || "");
+  movie.set("rating", movieData.rating ? Number(movieData.rating) : 0);
 
   const savedMovie = await movie.save();
   return mapMovieObject(savedMovie);
