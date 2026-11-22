@@ -1,4 +1,19 @@
 import { useEffect, useState } from "react";
+import {
+  Alert,
+  Box,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  MenuItem,
+  Stack,
+  Typography,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import { COLORS, FONTS } from "./theme";
+import { NormalButton, PrimaryButton } from "./Buttons";
+import { CustomTextField } from "./CustomInputs";
 
 const initialFormState = {
   title: "",
@@ -6,7 +21,7 @@ const initialFormState = {
   genre: "",
   runtime: "",
   recommendedBy: "",
-  status: "",
+  status: "Want to Watch",
   rating: "",
 };
 
@@ -31,8 +46,8 @@ const AddMovieForm = ({ todo = null, onClose, onSave }) => {
           genre: todo.genre || "",
           runtime: todo.runtime || "",
           recommendedBy: todo.recommendedBy || "",
-          status: todo.status || "",
-          rating: todo.rating ?? "",
+          status: todo.status || "Want to Watch",
+          rating: todo.rating || "",
         }
       : initialFormState,
   );
@@ -45,7 +60,7 @@ const AddMovieForm = ({ todo = null, onClose, onSave }) => {
       return undefined;
     }
 
-    const closeTimer = setTimeout(onClose, 2000);
+    const closeTimer = setTimeout(onClose, 1200);
     return () => clearTimeout(closeTimer);
   }, [successMessage, onClose]);
 
@@ -87,11 +102,11 @@ const AddMovieForm = ({ todo = null, onClose, onSave }) => {
           title,
           description,
           genre: formData.genre.trim(),
-          runtime: formData.runtime.trim(),
+          runtime: String(formData.runtime).trim(),
           recommendedBy: formData.recommendedBy.trim(),
-          rating: formData.rating ? Number(formData.rating) : null,
+          rating: formData.rating ? Number(formData.rating) : 0,
         });
-        setSuccessMessage("Movie added");
+        setSuccessMessage(todo ? "Movie updated" : "Movie added");
       }
     } catch (err) {
       setError(err?.message || "Unable to save this movie.");
@@ -101,159 +116,189 @@ const AddMovieForm = ({ todo = null, onClose, onSave }) => {
   };
 
   return (
-    <div className="todo-modal-overlay" onClick={onClose}>
-      <div className="todo-modal" onClick={(event) => event.stopPropagation()}>
-        <div className="todo-modal-header">
-          <div>
-            <p className="form-kicker">Watchlist</p>
-            <h3>{todo ? "Edit movie" : "Add movie"}</h3>
-          </div>
-          <button
-            type="button"
-            className="todo-close-button"
+    <Dialog
+      open
+      onClose={onClose}
+      fullWidth
+      maxWidth="sm"
+      slotProps={{
+        paper: {
+          sx: {
+            backgroundColor: COLORS.darkGray,
+            border: `1px solid ${COLORS.gold}66`,
+            borderRadius: 2,
+          },
+        },
+      }}
+    >
+      <DialogTitle sx={{ pb: 1 }}>
+        <Stack
+          direction="row"
+          sx={{ justifyContent: "space-between", alignItems: "flex-start" }}
+        >
+          <Stack>
+            <Typography
+              variant="caption"
+              sx={{ color: COLORS.gold, textTransform: "uppercase" }}
+            >
+              Watchlist
+            </Typography>
+            <Typography
+              variant="h2"
+              sx={{ color: COLORS.cream, fontWeight: FONTS.weights.bold }}
+            >
+              {todo ? "Edit movie" : "Add movie"}
+            </Typography>
+          </Stack>
+          <IconButton
             onClick={onClose}
             aria-label="Close form"
+            sx={{ color: COLORS.cream }}
           >
-            ×
-          </button>
-        </div>
+            <CloseIcon />
+          </IconButton>
+        </Stack>
+      </DialogTitle>
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-field">
-            <label htmlFor="movie-title">Movie title</label>
-            <input
-              id="movie-title"
+      <DialogContent sx={{ pt: "16px !important" }}>
+        <Box component="form" onSubmit={handleSubmit}>
+          <Stack spacing={2.5}>
+            <CustomTextField
+              label="Movie title"
               name="title"
-              type="text"
               value={formData.title}
               onChange={handleChange}
               placeholder="What do you want to watch?"
               required
+              sx={{ width: "100%" }}
             />
-          </div>
 
-          <div className="form-field">
-            <label htmlFor="movie-description">Description / note</label>
-            <textarea
-              id="movie-description"
+            <CustomTextField
+              label="Description / note"
               name="description"
               value={formData.description}
               onChange={handleChange}
               placeholder="Where did you hear about it? Anything to remember?"
-              rows="3"
+              multiline
+              rows={3}
+              sx={{ width: "100%" }}
             />
-          </div>
 
-          <div className="form-row">
-            <div className="form-field compact-field">
-              <label htmlFor="movie-genre">Genre</label>
-              <select
-                id="movie-genre"
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                gap: 2,
+              }}
+            >
+              <CustomTextField
+                select
+                label="Genre"
                 name="genre"
                 value={formData.genre}
                 onChange={handleChange}
+                sx={{ width: "100%" }}
               >
-                <option value="">Select a genre</option>
+                <MenuItem value="">Select a genre</MenuItem>
                 {formData.genre && !genreOptions.includes(formData.genre) && (
-                  <option value={formData.genre}>{formData.genre}</option>
+                  <MenuItem value={formData.genre}>{formData.genre}</MenuItem>
                 )}
                 {genreOptions.map((genre) => (
-                  <option key={genre} value={genre}>
+                  <MenuItem key={genre} value={genre}>
                     {genre}
-                  </option>
+                  </MenuItem>
                 ))}
-              </select>
-            </div>
+              </CustomTextField>
 
-            <div className="form-field compact-field">
-              <label htmlFor="movie-runtime">Runtime</label>
-              <input
-                id="movie-runtime"
+              <CustomTextField
+                label="Runtime"
                 name="runtime"
-                type="text"
                 value={formData.runtime}
                 onChange={handleChange}
                 placeholder="e.g. 120 min"
+                sx={{ width: "100%" }}
               />
-            </div>
-          </div>
+            </Box>
 
-          <div className="form-row">
-            <div className="form-field compact-field">
-              <label htmlFor="movie-status">Status</label>
-              <select
-                id="movie-status"
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                gap: 2,
+              }}
+            >
+              <CustomTextField
+                select
+                label="Status"
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
                 required
+                sx={{ width: "100%" }}
               >
-                <option value="">Select status</option>
                 {statusOptions.map((status) => (
-                  <option key={status} value={status}>
+                  <MenuItem key={status} value={status}>
                     {status}
-                  </option>
+                  </MenuItem>
                 ))}
-              </select>
-            </div>
-            <div className="form-field compact-field">
-              <label htmlFor="movie-rating">Your rating</label>
-              <select
-                id="movie-rating"
+              </CustomTextField>
+
+              <CustomTextField
+                select
+                label="Your rating"
                 name="rating"
                 value={formData.rating}
                 onChange={handleChange}
                 disabled={formData.status !== "Watched"}
+                sx={{ width: "100%" }}
               >
-                <option value="">Not rated</option>
+                <MenuItem value="">Not rated</MenuItem>
                 {ratingOptions.map((rating) => (
-                  <option key={rating} value={rating}>
+                  <MenuItem key={rating} value={rating}>
                     {rating} {rating === 1 ? "star" : "stars"}
-                  </option>
+                  </MenuItem>
                 ))}
-              </select>
-            </div>
-          </div>
+              </CustomTextField>
+            </Box>
 
-          <div className="form-field">
-            <label htmlFor="movie-recommended-by">Recommended by</label>
-            <input
-              id="movie-recommended-by"
+            <CustomTextField
+              label="Recommended by"
               name="recommendedBy"
-              type="text"
               value={formData.recommendedBy}
               onChange={handleChange}
               placeholder="e.g. Maria or a friend"
+              sx={{ width: "100%" }}
             />
-          </div>
 
-          {error && <p className="form-error">{error}</p>}
-
-          <div className="profile-editor-actions">
+            {error && <Alert severity="error">{error}</Alert>}
             {successMessage && (
-              <p className="success-message" role="status">
-                {successMessage}
-              </p>
+              <Alert severity="success">{successMessage}</Alert>
             )}
-            <button type="button" className="secondary btn" onClick={onClose}>
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="primary btn"
-              disabled={isSubmitting || Boolean(successMessage)}
+
+            <Stack
+              direction="row"
+              spacing={2}
+              sx={{ justifyContent: "flex-end", pt: 1 }}
             >
-              {successMessage ||
-                (isSubmitting
-                  ? "Saving..."
-                  : todo
-                    ? "Save Movie"
-                    : "Add Movie")}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+              <NormalButton type="button" onClick={onClose}>
+                Cancel
+              </NormalButton>
+              <PrimaryButton
+                type="submit"
+                disabled={isSubmitting || Boolean(successMessage)}
+              >
+                {successMessage ||
+                  (isSubmitting
+                    ? "Saving..."
+                    : todo
+                      ? "Save Movie"
+                      : "Add Movie")}
+              </PrimaryButton>
+            </Stack>
+          </Stack>
+        </Box>
+      </DialogContent>
+    </Dialog>
   );
 };
 
