@@ -16,7 +16,7 @@ import { useWatchlist } from "../hooks/useWatchlist";
 
 const STATUS_OPTIONS = ["Want to Watch", "Watching", "Watched"];
 
-export function WatchlistSection({ user, onPreviewShared }) {
+export function WatchlistSection({ user, onPreviewShared, activeStatus }) {
   const { movies, isLoading, error, saveMovie, removeMovie, moveMovie } =
     useWatchlist(user);
 
@@ -48,6 +48,7 @@ export function WatchlistSection({ user, onPreviewShared }) {
 
   const nextMovie =
     movies.find((m) => m.status === "Want to Watch") || movies[0] || null;
+  const visibleStatuses = activeStatus ? [activeStatus] : STATUS_OPTIONS;
 
   return (
     <Stack spacing={3.5} sx={{ width: "100%", textAlign: "left" }}>
@@ -72,13 +73,13 @@ export function WatchlistSection({ user, onPreviewShared }) {
               display: "grid",
               gridTemplateColumns: {
                 xs: "1fr",
-                md: "repeat(3, minmax(0, 1fr))",
+                md: activeStatus ? "1fr" : "repeat(3, minmax(0, 1fr))",
               },
               gap: 3,
               alignItems: "start",
             }}
           >
-            {STATUS_OPTIONS.map((statusName) => {
+            {visibleStatuses.map((statusName) => {
               const columnMovies = movies.filter(
                 (m) => m.status === statusName,
               );
@@ -146,7 +147,15 @@ export function WatchlistSection({ user, onPreviewShared }) {
                         No movies in {statusName.toLowerCase()}.
                       </Typography>
                     ) : (
-                      <Stack spacing={2}>
+                      <Stack
+                        spacing={2}
+                        useFlexGap
+                        direction={{
+                          xs: "column",
+                          md: activeStatus ? "row" : "column",
+                        }}
+                        sx={{ flexWrap: "wrap", alignItems: "flex-start" }}
+                      >
                         {columnMovies.map((movie) => (
                           <MovieCard
                             key={movie.id}
@@ -167,7 +176,12 @@ export function WatchlistSection({ user, onPreviewShared }) {
                             onMoveChange={(newStatus) =>
                               moveMovie(movie.id, newStatus)
                             }
-                            sx={{ width: "100%" }}
+                            sx={{
+                              width: {
+                                xs: "100%",
+                                md: activeStatus ? 420 : "100%",
+                              },
+                            }}
                           />
                         ))}
                       </Stack>
