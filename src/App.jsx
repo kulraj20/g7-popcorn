@@ -1,129 +1,247 @@
-import React, { useState } from "react";
-import { ThemeProvider, CssBaseline, Box, Stack } from "@mui/material";
-import { theme } from "./components/theme";
-import { MovieCard } from "./components/MovieCard";
+import { useState, useEffect } from "react";
+import {
+  Alert,
+  Box,
+  CssBaseline,
+  IconButton,
+  Menu,
+  MenuItem,
+  Stack,
+  ThemeProvider,
+  Typography,
+} from "@mui/material";
+import LocalMoviesIcon from "@mui/icons-material/LocalMovies";
+import MenuIcon from "@mui/icons-material/Menu";
+import { AuthForm } from "./components/AuthForm";
 import { UserProfileCard } from "./components/UserProfileCard";
-
-import heroImg from "./assets/hero.png";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "./assets/vite.svg";
-import "./App.css";
-import Parse from "parse";
-
-Parse.serverURL = "https://parseapi.back4app.com/"; // your PARSE_SERVER_URL
-Parse.initialize("YOUR_APP_ID", "YOUR_JAVASCRIPT_KEY");
+import { WatchlistSection } from "./components/WatchlistSection";
+import { SharedWatchlistPage } from "./pages/SharedWatchlistPage";
+import { COLORS, FONTS, theme } from "./components/theme";
+import { getBack4App, isBack4AppConfigured } from "./lib/back4app";
 
 export default function App() {
-  const [count, setCount] = useState(0);
+  const [user, setUser] = useState(() => {
+    if (isBack4AppConfigured) {
+      return getBack4App().User.current();
+    }
+    return null;
+  });
+  const [signOutError, setSignOutError] = useState("");
+  const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
+
+  const [shareToken, setShareToken] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("share") || "";
+  });
+
+  useEffect(() => {
+    function handlePopState() {
+      const params = new URLSearchParams(window.location.search);
+      setShareToken(params.get("share") || "");
+    }
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  function openSharedView(token) {
+    const newUrl = `${window.location.pathname}?share=${token}`;
+    window.history.pushState({}, "", newUrl);
+    setShareToken(token);
+  }
+
+  function closeSharedView() {
+    window.history.pushState({}, "", window.location.pathname);
+    setShareToken("");
+  }
+
+  async function handleSignOut() {
+    setSignOutError("");
+    setMobileMenuAnchor(null);
+
+    try {
+      const Parse = getBack4App();
+      await Parse.User.logOut();
+      setUser(null);
+    } catch {
+      setSignOutError("Couldn’t sign out. Try again.");
+    }
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+
+      {shareToken ? (
+        <SharedWatchlistPage
+          token={shareToken}
+          currentUser={user}
+          onGoToMyWatchlist={closeSharedView}
+          onSignOut={handleSignOut}
+        />
+      ) : !user ? (
+        <Box
+          component="main"
+          sx={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: COLORS.black,
+            p: 3,
+          }}
         >
-          Count is {count}
-        </button>
-      </section>
+          <Box sx={{ width: "100%", maxWidth: 440 }}>
+            <AuthForm onAuthenticated={setUser} />
+          </Box>
+        </Box>
+      ) : (
+        <Box
+          sx={{
+            minHeight: "100vh",
+            display: "flex",
+            flexDirection: "column",
+            backgroundColor: COLORS.black,
+            color: COLORS.cream,
+          }}
+        >
+          <Box
+            component="header"
+            sx={{
+              borderBottom: `1px solid ${COLORS.taupe}33`,
+              backgroundColor: COLORS.darkGray,
+              px: { xs: 2, md: 4 },
+              py: 1.25,
+            }}
+          >
+            <Stack
+              direction="row"
+              sx={{
+                justifyContent: "space-between",
+                alignItems: "center",
+                maxWidth: 1200,
+                mx: "auto",
+                width: "100%",
+              }}
+            >
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{ alignItems: "center", color: COLORS.gold }}
+              >
+                <LocalMoviesIcon sx={{ fontSize: 32 }} />
+                <Typography variant="h2" component="span">
+                  Popcorn
+                </Typography>
+              </Stack>
 
-      <div className="ticks"></div>
+              <Box sx={{ display: { xs: "none", md: "block" } }}>
+                <UserProfileCard
+                  name={user.get("name")}
+                  email={user.get("email")}
+                  onSignOut={handleSignOut}
+                  sx={{ p: 0.75, width: "auto" }}
+                />
+              </Box>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
+              <Box sx={{ display: { xs: "block", md: "none" } }}>
+                <IconButton
+                  onClick={(e) => setMobileMenuAnchor(e.currentTarget)}
+                  aria-label="Open menu"
+                  sx={{
+                    color: COLORS.cream,
+                    border: `1px solid ${COLORS.taupe}66`,
+                    borderRadius: 1.5,
+                  }}
                 >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
+                  <MenuIcon />
+                </IconButton>
+                <Menu
+                  anchorEl={mobileMenuAnchor}
+                  open={Boolean(mobileMenuAnchor)}
+                  onClose={() => setMobileMenuAnchor(null)}
+                  slotProps={{
+                    paper: {
+                      sx: {
+                        backgroundColor: COLORS.cream,
+                        color: COLORS.darkGray,
+                        minWidth: 200,
+                      },
+                    },
+                  }}
                 >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+                  <MenuItem disabled>
+                    <Stack>
+                      <Typography
+                        variant="caption"
+                        sx={{ fontWeight: FONTS.weights.bold }}
+                      >
+                        {user.get("name")}
+                      </Typography>
+                      <Typography variant="caption" sx={{ fontSize: "14px" }}>
+                        {user.get("email")}
+                      </Typography>
+                    </Stack>
+                  </MenuItem>
+                  <MenuItem onClick={handleSignOut}>Sign out</MenuItem>
+                </Menu>
+              </Box>
+            </Stack>
+          </Box>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+          <Box
+            component="main"
+            sx={{
+              flexGrow: 1,
+              width: "100%",
+              maxWidth: 1200,
+              mx: "auto",
+              px: { xs: 2, md: 4 },
+              py: { xs: 3, md: 4 },
+            }}
+          >
+            <Stack spacing={3}>
+              {signOutError && <Alert severity="error">{signOutError}</Alert>}
+              <WatchlistSection
+                key={user.id}
+                user={user}
+                onPreviewShared={(token) => openSharedView(token)}
+              />
+            </Stack>
+          </Box>
+
+          <Box
+            component="footer"
+            sx={{
+              borderTop: `1px solid ${COLORS.taupe}33`,
+              backgroundColor: COLORS.darkGray,
+              px: { xs: 2, md: 4 },
+              py: 2.5,
+            }}
+          >
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={1}
+              sx={{
+                justifyContent: "space-between",
+                alignItems: { xs: "flex-start", sm: "center" },
+                maxWidth: 1200,
+                mx: "auto",
+                width: "100%",
+              }}
+            >
+              <Typography
+                variant="body1"
+                sx={{ color: COLORS.gold, fontWeight: FONTS.weights.bold }}
+              >
+                Popcorn
+              </Typography>
+              <Typography variant="caption" sx={{ color: COLORS.taupe }}>
+                Track, rate, and share your movie watchlist.
+              </Typography>
+            </Stack>
+          </Box>
+        </Box>
+      )}
+    </ThemeProvider>
   );
 }
