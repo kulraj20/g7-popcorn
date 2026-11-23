@@ -222,6 +222,7 @@ export default function App() {
                 user={user}
                 onPreviewShared={(token) => openSharedView(token)}
                 activeStatus={activeView}
+                onViewChange={setActiveView}
               />
             </Stack>
           </Box>

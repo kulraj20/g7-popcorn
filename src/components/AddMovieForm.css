@@ -1,0 +1,253 @@
+.add-movie-dialog {
+  --movie-black: #101012;
+  --movie-gold: #c9a45c;
+  --movie-cream: #f5f0e8;
+  --movie-charcoal: #242327;
+  --movie-muted: #a8a398;
+}
+
+.add-movie-dialog-title {
+  flex: 0 0 auto;
+  padding: 18px 24px 12px !important;
+}
+
+.add-movie-kicker {
+  margin-bottom: 4px !important;
+}
+
+.add-movie-dialog-title h2 {
+  margin: 0;
+  color: var(--movie-cream);
+  font-size: 28px;
+  line-height: 1.15;
+}
+
+.add-movie-close {
+  width: 40px !important;
+  height: 40px !important;
+}
+
+.add-movie-close:focus-visible {
+  outline: 2px solid var(--movie-gold);
+  outline-offset: 2px;
+}
+
+.add-movie-dialog-content {
+  min-height: 0;
+  padding: 0 24px 20px !important;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.add-movie-dialog-content::-webkit-scrollbar {
+  display: none;
+}
+
+.add-movie-form-fields {
+  padding-top: 2px;
+}
+
+.add-movie-form-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+}
+
+.add-movie-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.add-movie-field-label {
+  color: var(--movie-cream);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.add-movie-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.add-movie-choice {
+  position: relative;
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border: 1px solid var(--movie-muted);
+  border-radius: 5px;
+  background: var(--movie-black);
+  color: var(--movie-cream);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.add-movie-choice input,
+.add-movie-star input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.add-movie-choice:hover,
+.add-movie-choice:has(input:checked) {
+  border-color: var(--movie-gold);
+  background: rgb(201 164 92 / 14%);
+  color: var(--movie-gold);
+}
+
+.add-movie-choice:has(input:focus-visible),
+.add-movie-star:has(input:focus-visible) {
+  outline: 2px solid var(--movie-gold);
+  outline-offset: 2px;
+}
+
+.add-movie-rating {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.add-movie-star {
+  position: relative;
+  display: grid;
+  width: 38px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid var(--movie-muted);
+  border-radius: 5px;
+  background: var(--movie-black);
+  color: #777;
+  cursor: pointer;
+  font-size: 23px;
+  line-height: 1;
+  transition:
+    color 150ms ease,
+    border-color 150ms ease,
+    background-color 150ms ease,
+    opacity 150ms ease;
+}
+
+.add-movie-star.is-filled {
+  border-color: var(--movie-gold);
+  background: rgb(201 164 92 / 14%);
+  color: var(--movie-gold);
+}
+
+.add-movie-star.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.add-movie-rating-hint {
+  min-height: 12px;
+  color: var(--movie-muted);
+  font-size: 10px;
+  line-height: 12px;
+}
+
+.add-movie-rating-hint.is-hidden {
+  visibility: hidden;
+}
+
+.add-movie-rating-footer {
+  position: relative;
+  display: flex;
+  min-height: 18px;
+  align-items: center;
+}
+
+.add-movie-clear-rating {
+  position: absolute;
+  left: 0;
+  min-height: 18px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--movie-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  line-height: 12px;
+  visibility: hidden;
+}
+
+.add-movie-clear-rating.is-visible {
+  visibility: visible;
+}
+
+.add-movie-clear-rating:hover {
+  color: var(--movie-gold);
+}
+
+.add-movie-clear-rating:disabled {
+  cursor: default;
+}
+
+.add-movie-actions {
+  justify-content: flex-end;
+  padding-top: 2px;
+}
+
+.add-movie-actions .MuiButton-root {
+  min-height: 40px;
+  border-radius: 5px;
+  padding: 6px 14px;
+  font-weight: 700;
+}
+
+.add-movie-actions .MuiTypography-root {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+@media (max-width: 600px) {
+  .add-movie-dialog-title {
+    padding: 16px 18px 10px !important;
+  }
+
+  .add-movie-dialog-title h2 {
+    font-size: 26px;
+  }
+
+  .add-movie-dialog-content {
+    padding: 0 18px 16px !important;
+  }
+
+  .add-movie-form-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .add-movie-actions {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 420px) {
+  .add-movie-actions {
+    flex-direction: column-reverse;
+  }
+
+  .add-movie-actions .MuiButton-root {
+    width: 100%;
+  }
+}

@@ -8,8 +8,9 @@ export const StatusChip = ({ label, sx, ...props }) => (
       <Typography
         variant="caption"
         sx={{
-          color: COLORS.cream,
-          fontWeight: FONTS.weights.regular,
+          color: COLORS.black,
+          fontSize: "13px",
+          fontWeight: FONTS.weights.bold,
           textTransform: "uppercase",
           lineHeight: 1,
         }}
@@ -18,9 +19,9 @@ export const StatusChip = ({ label, sx, ...props }) => (
       </Typography>
     }
     sx={{
-      backgroundColor: COLORS.red,
-      borderRadius: "999px",
-      height: 30,
+      backgroundColor: COLORS.gold,
+      borderRadius: "4px",
+      height: 26,
       px: 0.75,
       ...sx,
     }}

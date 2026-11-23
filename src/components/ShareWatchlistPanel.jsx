@@ -7,7 +7,7 @@ import { getOrCreateSharedLink } from "../lib/sharing";
 
 export function ShareWatchlistPanel({
   user,
-  nextMovie = null,
+  nextMovies = [],
   onAddMovieClick,
   onPreviewShared,
   onGoToWatchlist,
@@ -84,8 +84,9 @@ export function ShareWatchlistPanel({
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: { xs: "1fr", md: "1.2fr auto 1fr" },
-          gap: 3,
+          gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" },
+          rowGap: 3,
+          columnGap: 4,
           alignItems: "center",
         }}
       >
@@ -121,13 +122,41 @@ export function ShareWatchlistPanel({
           spacing={1.5}
           sx={{
             minWidth: { xs: "100%", md: 210 },
+            width: "100%",
+            maxWidth: { xs: "none", md: 280 },
+            justifySelf: "center",
             flexDirection: { xs: "column-reverse", md: "column" },
           }}
         >
           <NormalButton onClick={handleCopyShareLink} disabled={loading}>
             {loading ? "Generating..." : "Share Watchlist"}
           </NormalButton>
-          <PrimaryButton onClick={onAddMovieClick}>+ Add Movie</PrimaryButton>
+          <PrimaryButton
+            onClick={onAddMovieClick}
+            sx={{
+              minHeight: 44,
+              backgroundColor: COLORS.gold,
+              borderColor: COLORS.gold,
+              color: COLORS.black,
+              fontWeight: FONTS.weights.bold,
+              boxShadow: `0 2px 8px ${COLORS.gold}55`,
+              "& .MuiTypography-root": {
+                fontSize: "16px",
+                fontWeight: FONTS.weights.bold,
+              },
+              "&:hover": {
+                backgroundColor: "#D8B66C",
+                borderColor: "#D8B66C",
+                boxShadow: `0 3px 10px ${COLORS.gold}66`,
+              },
+              "&.Mui-focusVisible": {
+                outline: `2px solid ${COLORS.cream}`,
+                outlineOffset: 2,
+              },
+            }}
+          >
+            + Add Movie
+          </PrimaryButton>
         </Stack>
         <Box
           sx={{
@@ -137,22 +166,41 @@ export function ShareWatchlistPanel({
             backgroundColor: COLORS.black,
           }}
         >
-          <Stack spacing={1}>
+          <Stack
+            spacing={1}
+            sx={{ alignItems: "center", textAlign: "center", width: "100%" }}
+          >
             <Typography
               variant="caption"
               sx={{
                 color: COLORS.gold,
                 fontWeight: FONTS.weights.bold,
+                width: "100%",
               }}
             >
               Your Next Watchlist
             </Typography>
-            <Typography variant="caption" sx={{ color: COLORS.cream }}>
-              {nextMovie
-                ? `Up next: ${nextMovie.title}${nextMovie.genre ? ` (${nextMovie.genre})` : ""}`
-                : "No movies queued yet. Add a title to start planning your next movie night."}
-            </Typography>
-            <Box sx={{ pt: 0.5 }}>
+            {nextMovies.length > 0 ? (
+              <Stack spacing={0.75}>
+                {nextMovies.map((movie, index) => (
+                  <Typography
+                    key={movie.id}
+                    variant="caption"
+                    sx={{ color: COLORS.cream, width: "100%" }}
+                  >
+                    {`${index === 0 ? "Up next" : "Then"}: ${movie.title}${movie.genre ? ` (${movie.genre})` : ""}`}
+                  </Typography>
+                ))}
+              </Stack>
+            ) : (
+              <Typography
+                variant="caption"
+                sx={{ color: COLORS.cream, width: "100%" }}
+              >
+                You don't have any movie to watch at the moment.
+              </Typography>
+            )}
+            <Box sx={{ pt: 0.5, width: "100%" }}>
               <CustomLink
                 href="#watchlist-board"
                 onClick={handleGoToWatchlistClick}
