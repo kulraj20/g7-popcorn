@@ -2,13 +2,18 @@ import React from "react";
 import { Chip, Typography } from "@mui/material";
 import { COLORS, FONTS } from "./theme";
 
-export const StatusChip = ({ label, sx, ...props }) => (
+export const StatusChip = ({
+  label,
+  sx,
+  textColor = COLORS.black,
+  ...props
+}) => (
   <Chip
     label={
       <Typography
         variant="caption"
         sx={{
-          color: COLORS.black,
+          color: textColor,
           fontSize: "13px",
           fontWeight: FONTS.weights.bold,
           textTransform: "uppercase",

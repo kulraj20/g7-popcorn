@@ -203,7 +203,7 @@
 }
 
 .add-movie-actions {
-  justify-content: flex-end;
+  justify-content: center;
   padding-top: 2px;
 }
 
@@ -244,10 +244,11 @@
 
 @media (max-width: 420px) {
   .add-movie-actions {
-    flex-direction: column-reverse;
+    flex-direction: row;
+    justify-content: center;
   }
 
   .add-movie-actions .MuiButton-root {
-    width: 100%;
+    width: auto;
   }
 }

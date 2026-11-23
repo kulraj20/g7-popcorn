@@ -10,9 +10,9 @@ import {
   ThemeProvider,
   Typography,
 } from "@mui/material";
-import LocalMoviesIcon from "@mui/icons-material/LocalMovies";
 import MenuIcon from "@mui/icons-material/Menu";
 import { AuthForm } from "./components/AuthForm";
+import { BrandLogo } from "./components/BrandLogo";
 import { NavigationMenu } from "./components/NavigationMenu";
 import { UserProfileCard } from "./components/UserProfileCard";
 import { WatchlistSection } from "./components/WatchlistSection";
@@ -133,16 +133,7 @@ export default function App() {
                 width: "100%",
               }}
             >
-              <Stack
-                direction="row"
-                spacing={1}
-                sx={{ alignItems: "center", color: COLORS.gold }}
-              >
-                <LocalMoviesIcon sx={{ fontSize: 32 }} />
-                <Typography variant="h2" component="span">
-                  Popcorn
-                </Typography>
-              </Stack>
+              <BrandLogo compact />
 
               <Box sx={{ display: { xs: "none", md: "block" } }}>
                 <UserProfileCard
@@ -247,12 +238,7 @@ export default function App() {
                 width: "100%",
               }}
             >
-              <Typography
-                variant="body1"
-                sx={{ color: COLORS.gold, fontWeight: FONTS.weights.bold }}
-              >
-                Popcorn
-              </Typography>
+              <BrandLogo compact />
               <Typography variant="caption" sx={{ color: COLORS.taupe }}>
                 Track, rate, and share your movie watchlist.
               </Typography>
