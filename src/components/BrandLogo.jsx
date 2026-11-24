@@ -8,7 +8,7 @@ export function BrandLogo({ compact = false }) {
     <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
       <Box
         component="img"
-        src="/favicon.png"
+        src="favicon.png"
         alt=""
         aria-hidden="true"
         sx={{
