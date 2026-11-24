@@ -39,7 +39,7 @@ jobs:
         run: npm run build -- --base=/g7-popcorn/
         env:
           VITE_BACK4APP_APP_ID: ${{ secrets.VITE_BACK4APP_APP_ID }}
-          VITE_BACK4APP_JS_KEY: ${{ secrets.VITE_BACK4APP_JS_KEY }}
+          VITE_BACK4APP_JAVASCRIPT_KEY: ${{ secrets.VITE_BACK4APP_JAVASCRIPT_KEY }}
           VITE_BACK4APP_SERVER_URL: ${{secrets.VITE_BACK4APP_SERVER_URL}}
 
       - name: Verify build files
