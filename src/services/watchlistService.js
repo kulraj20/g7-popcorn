@@ -78,8 +78,7 @@ export async function saveMovieToWatchlist(user, movieData, movieId = null) {
   let movie;
 
   if (movieId) {
-    const query = new ParseInstance.Query(Movie);
-    movie = await query.get(movieId);
+    movie = Movie.createWithoutData(movieId);
   } else {
     const watchlist = await getOrCreateWatchlist(currentUser);
     movie = new Movie();
@@ -101,10 +100,14 @@ export async function saveMovieToWatchlist(user, movieData, movieId = null) {
 
 export async function updateMovieStatus(movieId, newStatus) {
   const ParseInstance = getBack4App();
-  const Movie = ParseInstance.Object.extend("Movie");
-  const query = new ParseInstance.Query(Movie);
+  const currentUser = ParseInstance.User.current();
 
-  const movie = await query.get(movieId);
+  if (!currentUser) {
+    throw new Error("You must be signed in to update a movie.");
+  }
+
+  const Movie = ParseInstance.Object.extend("Movie");
+  const movie = Movie.createWithoutData(movieId);
   movie.set("status", newStatus);
 
   const updatedMovie = await movie.save();
@@ -113,9 +116,13 @@ export async function updateMovieStatus(movieId, newStatus) {
 
 export async function deleteMovie(movieId) {
   const ParseInstance = getBack4App();
-  const Movie = ParseInstance.Object.extend("Movie");
-  const query = new ParseInstance.Query(Movie);
+  const currentUser = ParseInstance.User.current();
 
-  const movie = await query.get(movieId);
+  if (!currentUser) {
+    throw new Error("You must be signed in to delete a movie.");
+  }
+
+  const Movie = ParseInstance.Object.extend("Movie");
+  const movie = Movie.createWithoutData(movieId);
   await movie.destroy();
 }
