@@ -37,18 +37,18 @@ jobs:
 
       - name: Check Back4App env vars
         env:
-          VITE_BACK4APP_APPLICATION_ID: ${{ secrets.VITE_BACK4APP_APP_ID }}
-          VITE_BACK4APP_JAVASCRIPT_KEY: ${{ secrets.VITE_BACK4APP_JS_KEY }}
+          VITE_BACK4APP_APPLICATION_ID: ${{ secrets.VITE_BACK4APP_APPLICATION_ID }}
+          VITE_BACK4APP_JAVASCRIPT_KEY: ${{ secrets.VITE_BACK4APP_JAVASCRIPT_KEY }}
           VITE_BACK4APP_SERVER_URL: ${{ secrets.VITE_BACK4APP_SERVER_URL }}
         run: |
           echo "APP_ID length: ${#VITE_BACK4APP_APPLICATION_ID}"
-          echo "JS_KEY length: ${#VITE_BACK4APP_JAVASCRIPT_KEY}"
+          echo "JAVASCRIPT_KEY length: ${#VITE_BACK4APP_JAVASCRIPT_KEY}"
           echo "SERVER_URL: ${VITE_BACK4APP_SERVER_URL:-'(not set, will use default)'}"
 
       - name: Build React app
         run: npm run build -- --base=/g7-popcorn/
         env:
-          VITE_BACK4APP_APP_ID: ${{ secrets.VITE_BACK4APP_APP_ID }}
+          VITE_BACK4APP_APPLICATION_ID: ${{ secrets.VITE_BACK4APP_APPLICATION_ID }}
           VITE_BACK4APP_JAVASCRIPT_KEY: ${{ secrets.VITE_BACK4APP_JAVASCRIPT_KEY }}
           VITE_BACK4APP_SERVER_URL: ${{secrets.VITE_BACK4APP_SERVER_URL}}
 
