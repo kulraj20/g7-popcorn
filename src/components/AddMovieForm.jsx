@@ -6,7 +6,6 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  MenuItem,
   Stack,
   Typography,
 } from "@mui/material";
@@ -14,6 +13,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { COLORS, FONTS } from "./theme";
 import { NormalButton, PrimaryButton } from "./Buttons";
 import { CustomTextField } from "./CustomInputs";
+import "./AddMovieForm.css";
 
 const initialFormState = {
   title: "",
@@ -29,13 +29,44 @@ const genreOptions = [
   "Action",
   "Comedy",
   "Drama",
+  "Romance",
   "Sci-Fi",
   "Horror",
+  "Thriller",
   "Serial",
 ];
 
 const statusOptions = ["Want to Watch", "Watching", "Watched"];
 const ratingOptions = [1, 2, 3, 4, 5];
+const movieFieldSx = {
+  width: "100%",
+  "& .MuiOutlinedInput-root": {
+    borderRadius: "5px",
+    backgroundColor: COLORS.black,
+    color: COLORS.cream,
+    fontSize: "16px",
+    "& fieldset": { borderColor: COLORS.taupe },
+    "&:hover fieldset": { borderColor: COLORS.cream },
+    "&.Mui-focused fieldset": {
+      borderColor: COLORS.gold,
+      borderWidth: 1,
+    },
+    "&.MuiInputBase-multiline": {
+      alignItems: "flex-start",
+      padding: "8px 12px",
+    },
+  },
+  "& .MuiOutlinedInput-input": { padding: "10px 12px" },
+  "& .MuiOutlinedInput-inputMultiline": {
+    alignSelf: "flex-start",
+    padding: 0,
+    textAlign: "left",
+  },
+  "& .MuiOutlinedInput-input::placeholder": {
+    color: COLORS.taupe,
+    opacity: 0.75,
+  },
+};
 
 const AddMovieForm = ({ todo = null, onClose, onSave }) => {
   const [formData, setFormData] = useState(() =>
@@ -47,10 +78,11 @@ const AddMovieForm = ({ todo = null, onClose, onSave }) => {
           runtime: todo.runtime || "",
           recommendedBy: todo.recommendedBy || "",
           status: todo.status || "Want to Watch",
-          rating: todo.rating || "",
+          rating: todo.rating ?? "",
         }
       : initialFormState,
   );
+  const [hoverRating, setHoverRating] = useState(0);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -64,21 +96,17 @@ const AddMovieForm = ({ todo = null, onClose, onSave }) => {
     return () => clearTimeout(closeTimer);
   }, [successMessage, onClose]);
 
+  const isRatingDisabled = formData.status !== "Watched";
+  const activeRating =
+    hoverRating || Number(formData.rating) || 0;
+
   const handleChange = (event) => {
     const { name, value } = event.target;
 
-    setFormData((previous) => {
-      const updatedForm = {
-        ...previous,
-        [name]: value,
-      };
-
-      if (name === "status" && value !== "Watched") {
-        updatedForm.rating = "";
-      }
-
-      return updatedForm;
-    });
+    setFormData((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
   };
 
   const handleSubmit = async (event) => {
@@ -104,7 +132,10 @@ const AddMovieForm = ({ todo = null, onClose, onSave }) => {
           genre: formData.genre.trim(),
           runtime: String(formData.runtime).trim(),
           recommendedBy: formData.recommendedBy.trim(),
-          rating: formData.rating ? Number(formData.rating) : 0,
+          rating:
+            formData.status === "Watched" && formData.rating
+              ? Number(formData.rating)
+              : 0,
         });
         setSuccessMessage(todo ? "Movie updated" : "Movie added");
       }
@@ -118,28 +149,43 @@ const AddMovieForm = ({ todo = null, onClose, onSave }) => {
   return (
     <Dialog
       open
-      onClose={onClose}
+      onClose={(event, reason) => {
+        if (reason !== "backdropClick") {
+          onClose();
+        }
+      }}
       fullWidth
-      maxWidth="sm"
+      maxWidth={false}
+      className="add-movie-dialog"
       slotProps={{
         paper: {
           sx: {
             backgroundColor: COLORS.darkGray,
-            border: `1px solid ${COLORS.gold}66`,
-            borderRadius: 2,
+            border: `1px solid ${COLORS.taupe}99`,
+            borderRadius: "10px",
+            width: "min(620px, calc(100% - 32px))",
+            maxHeight: "calc(100dvh - 32px)",
+            m: 0,
+            boxShadow: "0 24px 60px rgba(0, 0, 0, 0.55)",
           },
         },
       }}
     >
-      <DialogTitle sx={{ pb: 1 }}>
+      <DialogTitle className="add-movie-dialog-title">
         <Stack
           direction="row"
           sx={{ justifyContent: "space-between", alignItems: "flex-start" }}
         >
           <Stack>
             <Typography
-              variant="caption"
-              sx={{ color: COLORS.gold, textTransform: "uppercase" }}
+              className="add-movie-kicker"
+              sx={{
+                color: COLORS.gold,
+                fontSize: 14,
+                fontWeight: FONTS.weights.bold,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+              }}
             >
               Watchlist
             </Typography>
@@ -153,122 +199,265 @@ const AddMovieForm = ({ todo = null, onClose, onSave }) => {
           <IconButton
             onClick={onClose}
             aria-label="Close form"
-            sx={{ color: COLORS.cream }}
+            className="add-movie-close"
+            sx={{
+              width: 48,
+              height: 48,
+              borderRadius: 1,
+              backgroundColor: COLORS.black,
+              color: COLORS.cream,
+              "&:hover": {
+                backgroundColor: COLORS.red,
+                color: COLORS.black,
+              },
+            }}
           >
             <CloseIcon />
           </IconButton>
         </Stack>
       </DialogTitle>
 
-      <DialogContent sx={{ pt: "16px !important" }}>
+      <DialogContent className="add-movie-dialog-content">
         <Box component="form" onSubmit={handleSubmit}>
-          <Stack spacing={2.5}>
-            <CustomTextField
-              label="Movie title"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              placeholder="What do you want to watch?"
-              required
-              sx={{ width: "100%" }}
-            />
-
-            <CustomTextField
-              label="Description / note"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              placeholder="Where did you hear about it? Anything to remember?"
-              multiline
-              rows={3}
-              sx={{ width: "100%" }}
-            />
-
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                gap: 2,
-              }}
-            >
-              <CustomTextField
-                select
-                label="Genre"
-                name="genre"
-                value={formData.genre}
-                onChange={handleChange}
-                sx={{ width: "100%" }}
+          <Stack spacing={2} className="add-movie-form-fields">
+            <Box className="add-movie-field">
+              <Typography
+                component="label"
+                htmlFor="movie-title"
+                className="add-movie-field-label"
               >
-                <MenuItem value="">Select a genre</MenuItem>
-                {formData.genre && !genreOptions.includes(formData.genre) && (
-                  <MenuItem value={formData.genre}>{formData.genre}</MenuItem>
-                )}
-                {genreOptions.map((genre) => (
-                  <MenuItem key={genre} value={genre}>
-                    {genre}
-                  </MenuItem>
-                ))}
-              </CustomTextField>
-
+                Movie title
+              </Typography>
               <CustomTextField
-                label="Runtime"
-                name="runtime"
-                value={formData.runtime}
+                id="movie-title"
+                name="title"
+                value={formData.title}
                 onChange={handleChange}
-                placeholder="e.g. 120 min"
-                sx={{ width: "100%" }}
+                placeholder="What do you want to watch?"
+                required
+                className="add-movie-text-field"
+                sx={movieFieldSx}
               />
             </Box>
 
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                gap: 2,
-              }}
-            >
-              <CustomTextField
-                select
-                label="Status"
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                required
-                sx={{ width: "100%" }}
+            <Box className="add-movie-field">
+              <Typography
+                component="label"
+                htmlFor="movie-description"
+                className="add-movie-field-label"
               >
-                {statusOptions.map((status) => (
-                  <MenuItem key={status} value={status}>
-                    {status}
-                  </MenuItem>
-                ))}
-              </CustomTextField>
-
+                Description / note
+              </Typography>
               <CustomTextField
-                select
-                label="Your rating"
-                name="rating"
-                value={formData.rating}
+                id="movie-description"
+                name="description"
+                value={formData.description}
                 onChange={handleChange}
-                disabled={formData.status !== "Watched"}
-                sx={{ width: "100%" }}
-              >
-                <MenuItem value="">Not rated</MenuItem>
-                {ratingOptions.map((rating) => (
-                  <MenuItem key={rating} value={rating}>
-                    {rating} {rating === 1 ? "star" : "stars"}
-                  </MenuItem>
-                ))}
-              </CustomTextField>
+                placeholder="Where did you hear about it? Anything to remember?"
+                multiline
+                minRows={1}
+                maxRows={3}
+                className="add-movie-text-field"
+                sx={movieFieldSx}
+              />
             </Box>
 
-            <CustomTextField
-              label="Recommended by"
-              name="recommendedBy"
-              value={formData.recommendedBy}
-              onChange={handleChange}
-              placeholder="e.g. Maria or a friend"
-              sx={{ width: "100%" }}
-            />
+            <Box className="add-movie-form-row">
+              <Box className="add-movie-field">
+                <Typography component="span" className="add-movie-field-label">
+                  Genre
+                </Typography>
+                <Box
+                  className="add-movie-choices"
+                  role="radiogroup"
+                  aria-label="Genre"
+                >
+                  {formData.genre && !genreOptions.includes(formData.genre) && (
+                    <label className="add-movie-choice" key={formData.genre}>
+                      <input
+                        type="radio"
+                        name="genre"
+                        value={formData.genre}
+                        checked
+                        onChange={handleChange}
+                      />
+                      <span>{formData.genre}</span>
+                    </label>
+                  )}
+                  {genreOptions.map((genre) => {
+                    const inputId = `movie-genre-${genre
+                      .toLowerCase()
+                      .replace(/[^a-z0-9]+/g, "-")}`;
+
+                    return (
+                      <label
+                        className="add-movie-choice"
+                        htmlFor={inputId}
+                        key={genre}
+                      >
+                        <input
+                          id={inputId}
+                          type="radio"
+                          name="genre"
+                          value={genre}
+                          checked={formData.genre === genre}
+                          onChange={handleChange}
+                        />
+                        <span>{genre}</span>
+                      </label>
+                    );
+                  })}
+                </Box>
+              </Box>
+
+              <Box className="add-movie-field">
+                <Typography
+                  component="label"
+                  htmlFor="movie-runtime"
+                  className="add-movie-field-label"
+                >
+                  Runtime
+                </Typography>
+                <CustomTextField
+                  id="movie-runtime"
+                  name="runtime"
+                  type="number"
+                  value={formData.runtime}
+                  onChange={handleChange}
+                  placeholder="e.g. 120 min"
+                  className="add-movie-text-field"
+                  sx={movieFieldSx}
+                />
+              </Box>
+            </Box>
+
+            <Box className="add-movie-field">
+              <Typography component="span" className="add-movie-field-label">
+                Status
+              </Typography>
+              <Box
+                className="add-movie-choices"
+                role="radiogroup"
+                aria-label="Status"
+              >
+                {statusOptions.map((status) => {
+                  const inputId = `movie-status-${status
+                    .toLowerCase()
+                    .replace(/\s+/g, "-")}`;
+
+                  return (
+                    <label
+                      className="add-movie-choice"
+                      htmlFor={inputId}
+                      key={status}
+                    >
+                      <input
+                        id={inputId}
+                        type="radio"
+                        name="status"
+                        value={status}
+                        checked={formData.status === status}
+                        onChange={handleChange}
+                        required
+                      />
+                      <span>{status}</span>
+                    </label>
+                  );
+                })}
+              </Box>
+            </Box>
+
+            <Box className="add-movie-form-row">
+              <Box className="add-movie-field">
+                <Typography component="span" className="add-movie-field-label">
+                  Your rating
+                </Typography>
+                <Box
+                  className="add-movie-rating"
+                  role="radiogroup"
+                  aria-label="Your rating"
+                  onMouseLeave={() => setHoverRating(0)}
+                >
+                  {ratingOptions.map((rating) => {
+                    const inputId = `movie-rating-${rating}`;
+
+                    return (
+                      <label
+                        className={`add-movie-star ${
+                          rating <= activeRating ? "is-filled" : ""
+                        } ${isRatingDisabled ? "is-disabled" : ""}`}
+                        htmlFor={inputId}
+                        key={rating}
+                        onMouseEnter={() =>
+                          !isRatingDisabled && setHoverRating(rating)
+                        }
+                      >
+                        <input
+                          id={inputId}
+                          type="radio"
+                          name="rating"
+                          value={rating}
+                          checked={Number(formData.rating) === rating}
+                          onChange={handleChange}
+                          disabled={isRatingDisabled}
+                        />
+                        <span aria-hidden="true">★</span>
+                      </label>
+                    );
+                  })}
+                </Box>
+                <Box className="add-movie-rating-footer">
+                  <Typography
+                    component="span"
+                    className={`add-movie-rating-hint ${
+                      isRatingDisabled ? "" : "is-hidden"
+                    }`}
+                    aria-hidden={!isRatingDisabled}
+                    sx={{
+                      fontSize: "12px",
+                      lineHeight: 1.2,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Available when status is Watched
+                  </Typography>
+                  <button
+                    type="button"
+                    className={`add-movie-clear-rating ${
+                      formData.rating && !isRatingDisabled ? "is-visible" : ""
+                    }`}
+                    onClick={() =>
+                      handleChange({
+                        target: { name: "rating", value: "" },
+                      })
+                    }
+                    disabled={!formData.rating || isRatingDisabled}
+                    aria-hidden={!formData.rating || isRatingDisabled}
+                  >
+                    Clear
+                  </button>
+                </Box>
+              </Box>
+
+              <Box className="add-movie-field">
+                <Typography
+                  component="label"
+                  htmlFor="movie-recommended-by"
+                  className="add-movie-field-label"
+                >
+                  Recommended by
+                </Typography>
+                <CustomTextField
+                  id="movie-recommended-by"
+                  name="recommendedBy"
+                  value={formData.recommendedBy}
+                  onChange={handleChange}
+                  placeholder="e.g. Maria or a friend"
+                  className="add-movie-text-field"
+                  sx={movieFieldSx}
+                />
+              </Box>
+            </Box>
 
             {error && <Alert severity="error">{error}</Alert>}
             {successMessage && (
@@ -278,21 +467,41 @@ const AddMovieForm = ({ todo = null, onClose, onSave }) => {
             <Stack
               direction="row"
               spacing={2}
-              sx={{ justifyContent: "flex-end", pt: 1 }}
+              className="add-movie-actions"
             >
-              <NormalButton type="button" onClick={onClose}>
+              <NormalButton
+                type="button"
+                onClick={onClose}
+                sx={{
+                  backgroundColor: "transparent",
+                  color: COLORS.cream,
+                  borderColor: COLORS.taupe,
+                  "&:hover": {
+                    backgroundColor: COLORS.black,
+                    borderColor: COLORS.gold,
+                  },
+                }}
+              >
                 Cancel
               </NormalButton>
               <PrimaryButton
                 type="submit"
                 disabled={isSubmitting || Boolean(successMessage)}
+                sx={{
+                  backgroundColor: COLORS.gold,
+                  color: COLORS.black,
+                  borderColor: COLORS.gold,
+                  "&:hover": {
+                    backgroundColor: "#D8B66C",
+                    borderColor: "#D8B66C",
+                  },
+                }}
               >
-                {successMessage ||
-                  (isSubmitting
-                    ? "Saving..."
-                    : todo
-                      ? "Save Movie"
-                      : "Add Movie")}
+                {isSubmitting
+                  ? "Saving..."
+                  : todo
+                    ? "Save Movie"
+                    : "Add Movie"}
               </PrimaryButton>
             </Stack>
           </Stack>

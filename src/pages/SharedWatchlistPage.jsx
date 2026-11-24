@@ -8,9 +8,9 @@ import {
   CircularProgress,
   Alert,
 } from "@mui/material";
-import LocalMoviesIcon from "@mui/icons-material/LocalMovies";
 import { COLORS, FONTS } from "../components/theme";
 import { NormalButton, PrimaryButton } from "../components/Buttons";
+import { BrandLogo } from "../components/BrandLogo";
 import { StatusChip } from "../components/StatusChip";
 import { UserProfileCard } from "../components/UserProfileCard";
 import { fetchSharedWatchlistByToken } from "../lib/sharing";
@@ -89,20 +89,24 @@ export function SharedWatchlistPage({
             width: "100%",
           }}
         >
-          <Stack
-            direction="row"
-            spacing={1}
+          <Box
+            component="button"
+            type="button"
             onClick={onGoToMyWatchlist}
+            aria-label="Go to your watchlist"
             sx={{
-              alignItems: "center",
-              color: COLORS.gold,
+              border: 0,
+              p: 0,
+              background: "transparent",
               cursor: "pointer",
+              "&:focus-visible": {
+                outline: `2px solid ${COLORS.gold}`,
+                outlineOffset: 4,
+              },
             }}
           >
-            <Typography variant="h2" component="span">
-              Popcorn
-            </Typography>
-          </Stack>
+            <BrandLogo compact />
+          </Box>
 
           <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
             <PrimaryButton onClick={onGoToMyWatchlist} sx={{ py: 0.5, px: 2 }}>
@@ -183,13 +187,22 @@ export function SharedWatchlistPage({
               >
                 <StatusChip
                   label={`${data.movies.length} movies`}
+                  textColor={COLORS.gold}
                   sx={{
                     backgroundColor: COLORS.darkGray,
                     border: `1px solid ${COLORS.gold}`,
                   }}
                 />
-                <StatusChip label="Read-only" sx={badgeStyle} />
-                <StatusChip label="No sign-in" sx={badgeStyle} />
+                <StatusChip
+                  label="Read-only"
+                  textColor={COLORS.cream}
+                  sx={badgeStyle}
+                />
+                <StatusChip
+                  label="No sign-in"
+                  textColor={COLORS.cream}
+                  sx={badgeStyle}
+                />
               </Stack>
             </Stack>
 
@@ -326,13 +339,8 @@ export function SharedWatchlistPage({
             width: "100%",
           }}
         >
-          <Stack>
-            <Typography
-              variant="body1"
-              sx={{ color: COLORS.gold, fontWeight: FONTS.weights.bold }}
-            >
-              Popcorn
-            </Typography>
+          <Stack spacing={0.75}>
+            <BrandLogo compact />
             <Typography variant="caption" sx={{ color: COLORS.taupe }}>
               Keep a close movie for the right night.
             </Typography>

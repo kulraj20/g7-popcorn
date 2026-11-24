@@ -5,15 +5,25 @@ import {
   Stack,
   Typography,
   Rating,
-  Select,
-  MenuItem,
+  Button,
 } from "@mui/material";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { COLORS, FONTS } from "./theme";
 import { PrimaryButton, DeleteButton } from "./Buttons";
 import { StatusChip } from "./StatusChip";
+
+const actionButtonSx = {
+  minWidth: 88,
+  minHeight: 32,
+  px: 1.5,
+  py: 0.25,
+  "& .MuiTypography-root": {
+    fontSize: "14px",
+    fontWeight: FONTS.weights.bold,
+    whiteSpace: "nowrap",
+  },
+};
 
 export const MovieCard = ({
   title,
@@ -26,9 +36,7 @@ export const MovieCard = ({
   onDelete,
   editLabel = "Edit",
   deleteLabel = "Delete",
-  movePlaceholder = "Move to...",
   moveOptions = [],
-  selectedMove = "",
   onMoveChange,
   sx,
 }) => {
@@ -97,73 +105,47 @@ export const MovieCard = ({
           />
 
           {/* Action Buttons */}
-          <Stack direction="row" spacing={2}>
-            <PrimaryButton fullWidth onClick={onEdit}>
+          <Stack direction="row" spacing={1.5} justifyContent="center">
+            <PrimaryButton onClick={onEdit} sx={actionButtonSx}>
               {editLabel}
             </PrimaryButton>
-            <DeleteButton fullWidth onClick={onDelete}>
+            <DeleteButton onClick={onDelete} sx={actionButtonSx}>
               {deleteLabel}
             </DeleteButton>
           </Stack>
 
-          {/* "Move to..." Select Dropdown */}
-          <Select
-            value={selectedMove}
-            displayEmpty
-            onChange={(e) => onMoveChange && onMoveChange(e.target.value)}
-            size="small"
-            IconComponent={(props) => (
-              <ArrowDropDownIcon
-                {...props}
-                sx={{ color: `${COLORS.gold} !important` }} // #C9A45C[cite: 1, 2]
-              />
-            )}
-            sx={{
-              backgroundColor: COLORS.black, // #101012[cite: 1, 2]
-              color: COLORS.gold, // #C9A45C[cite: 1, 2]
-              py: 0.5,
-              ".MuiOutlinedInput-notchedOutline": {
-                borderColor: COLORS.gold,
-              },
-              "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: COLORS.gold,
-              },
-              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: COLORS.gold,
-              },
-            }}
-            MenuProps={{
-              PaperProps: {
-                sx: {
-                  backgroundColor: COLORS.cream, // #F5F0E8[cite: 1, 2]
-                  color: COLORS.darkGray, // #242327[cite: 1, 2]
-                  mt: 0.5,
-                },
-              },
-            }}
-          >
-            <MenuItem value="" disabled>
-              <Typography
-                variant="body1"
-                sx={{ color: COLORS.gold, fontWeight: FONTS.weights.regular }}
-              >
-                {movePlaceholder}
-              </Typography>
-            </MenuItem>
+          <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
             {moveOptions.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color: COLORS.darkGray,
-                    fontWeight: FONTS.weights.regular,
-                  }}
-                >
-                  {option.label}
-                </Typography>
-              </MenuItem>
+              <Button
+                key={option.value}
+                variant="outlined"
+                size="small"
+                onClick={() => onMoveChange?.(option.value)}
+                aria-label={`Move ${title} to ${option.label}`}
+                sx={{
+                  flex: "1 1 0",
+                  minWidth: 0,
+                  minHeight: 34,
+                  px: 1,
+                  py: 0.5,
+                  borderColor: `${COLORS.gold}99`,
+                  borderRadius: "4px",
+                  backgroundColor: COLORS.black,
+                  color: COLORS.gold,
+                  fontSize: "13px",
+                  fontWeight: FONTS.weights.bold,
+                  lineHeight: 1.2,
+                  textTransform: "none",
+                  "&:hover": {
+                    borderColor: COLORS.gold,
+                    backgroundColor: `${COLORS.gold}18`,
+                  },
+                }}
+              >
+                Move to {option.label}
+              </Button>
             ))}
-          </Select>
+          </Stack>
         </Stack>
       </CardContent>
     </Card>

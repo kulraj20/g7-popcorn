@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Alert, Stack, Typography } from "@mui/material";
-import LocalMoviesIcon from "@mui/icons-material/LocalMovies";
+import { BrandLogo } from "./BrandLogo";
 import { NormalButton, PrimaryButton } from "./Buttons";
 import { CustomTextField } from "./CustomInputs";
 import { COLORS } from "./theme";
@@ -50,13 +50,17 @@ export function AuthForm({ onAuthenticated }) {
         direction="row"
         spacing={1}
         alignItems="center"
-        justifyContent="center"
-        sx={{ color: COLORS.gold }}
+        sx={{
+          width: "100%",
+          alignSelf: "center",
+          justifyContent: "center",
+          position: "relative",
+          top: { xs: -32, sm: -48 },
+          mb: 1,
+          color: COLORS.gold,
+        }}
       >
-        <LocalMoviesIcon sx={{ fontSize: 32 }} />
-        <Typography component="span" variant="h2">
-          Popcorn
-        </Typography>
+        <BrandLogo />
       </Stack>
 
       <Typography component="h1" variant="h2" sx={{ color: COLORS.cream }}>

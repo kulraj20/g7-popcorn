@@ -10,16 +10,25 @@ import {
   ThemeProvider,
   Typography,
 } from "@mui/material";
-import LocalMoviesIcon from "@mui/icons-material/LocalMovies";
 import MenuIcon from "@mui/icons-material/Menu";
 import { AuthForm } from "./components/AuthForm";
+import { BrandLogo } from "./components/BrandLogo";
+import { NavigationMenu } from "./components/NavigationMenu";
 import { UserProfileCard } from "./components/UserProfileCard";
 import { WatchlistSection } from "./components/WatchlistSection";
 import { SharedWatchlistPage } from "./pages/SharedWatchlistPage";
 import { COLORS, FONTS, theme } from "./components/theme";
 import { getBack4App, isBack4AppConfigured } from "./lib/back4app";
 
+// Tabs shown after sign-in. Add an entry here (and render it below) for new pages.
+const NAV_ITEMS = [
+  { id: "Want to Watch", label: "Want to Watch" },
+  { id: "Watching", label: "Watching" },
+  { id: "Watched", label: "Watched" },
+];
+
 export default function App() {
+  const [activeView, setActiveView] = useState(NAV_ITEMS[0].id);
   const [user, setUser] = useState(() => {
     if (isBack4AppConfigured) {
       return getBack4App().User.current();
@@ -62,6 +71,7 @@ export default function App() {
       const Parse = getBack4App();
       await Parse.User.logOut();
       setUser(null);
+      setActiveView(NAV_ITEMS[0].id);
     } catch {
       setSignOutError("Couldn’t sign out. Try again.");
     }
@@ -123,16 +133,7 @@ export default function App() {
                 width: "100%",
               }}
             >
-              <Stack
-                direction="row"
-                spacing={1}
-                sx={{ alignItems: "center", color: COLORS.gold }}
-              >
-                <LocalMoviesIcon sx={{ fontSize: 32 }} />
-                <Typography variant="h2" component="span">
-                  Popcorn
-                </Typography>
-              </Stack>
+              <BrandLogo compact />
 
               <Box sx={{ display: { xs: "none", md: "block" } }}>
                 <UserProfileCard
@@ -188,6 +189,12 @@ export default function App() {
             </Stack>
           </Box>
 
+          <NavigationMenu
+            items={NAV_ITEMS}
+            activeView={activeView}
+            onViewChange={setActiveView}
+          />
+
           <Box
             component="main"
             sx={{
@@ -205,6 +212,8 @@ export default function App() {
                 key={user.id}
                 user={user}
                 onPreviewShared={(token) => openSharedView(token)}
+                activeStatus={activeView}
+                onViewChange={setActiveView}
               />
             </Stack>
           </Box>
@@ -229,12 +238,7 @@ export default function App() {
                 width: "100%",
               }}
             >
-              <Typography
-                variant="body1"
-                sx={{ color: COLORS.gold, fontWeight: FONTS.weights.bold }}
-              >
-                Popcorn
-              </Typography>
+              <BrandLogo compact />
               <Typography variant="caption" sx={{ color: COLORS.taupe }}>
                 Track, rate, and share your movie watchlist.
               </Typography>
