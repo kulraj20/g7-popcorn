@@ -4,7 +4,7 @@ import {
   getUserMovies,
   saveMovieToWatchlist,
   updateMovieStatus,
-} from "../lib/back4app";
+} from "../services/watchlistService";
 
 export function useWatchlist(user) {
   const [movies, setMovies] = useState([]);

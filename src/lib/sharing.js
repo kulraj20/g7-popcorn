@@ -1,4 +1,5 @@
-import { getBack4App, getOrCreateWatchlist } from "./back4app";
+import { getBack4App } from "./back4app";
+import { getOrCreateWatchlist } from "../services/watchlistService";
 
 function generateSecureToken() {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
