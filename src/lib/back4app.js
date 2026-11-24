@@ -7,43 +7,31 @@ const serverURL =
 
 export const isBack4AppConfigured = Boolean(applicationId && javascriptKey);
 
-console.group("[Back4App] Init Diagnostics");
-console.log("isBack4AppConfigured:", isBack4AppConfigured);
-console.log(
-  "APP_ID:",
-  applicationId
-    ? `${applicationId.slice(0, 4)}... (len: ${applicationId.length})`
-    : "MISSING",
-);
-console.log(
-  "JS_KEY:",
-  javascriptKey
-    ? `${javascriptKey.slice(0, 4)}... (len: ${javascriptKey.length})`
-    : "MISSING",
-);
-console.log("SERVER_URL:", serverURL);
-console.groupEnd();
-
 if (isBack4AppConfigured) {
   Parse.initialize(applicationId, javascriptKey);
   Parse.serverURL = serverURL;
+} else {
+  const missing = [
+    !applicationId && "VITE_BACK4APP_APPLICATION_ID",
+    !javascriptKey && "VITE_BACK4APP_JAVASCRIPT_KEY",
+  ].filter(Boolean);
+
+  console.error(
+    `[Back4App] Missing configuration: ${missing.join(", ")}. Add them to .env.local or GitHub Secrets and rebuild.`,
+  );
 }
 
 function logParseError(context, err) {
-  console.error(`[Back4App Error] ${context}:`, {
-    code: err?.code ?? "NO_CODE",
-    message: err?.message ?? String(err),
-    raw: err,
-  });
+  const reason = err?.code
+    ? `(code ${err.code}) ${err.message}`
+    : err?.message || String(err);
+
+  console.error(`[Back4App] ${context} failed: ${reason}`);
 }
 
 export function getBack4App() {
   if (!isBack4AppConfigured) {
-    const err = new Error(
-      "Set the Back4App Application ID and JavaScript Key in .env.local (or GitHub Secrets), then rebuild.",
-    );
-    logParseError("getBack4App", err);
-    throw err;
+    throw new Error("Back4App is not configured (missing App ID or JS Key).");
   }
 
   return Parse;
@@ -84,7 +72,6 @@ export async function getOrCreateWatchlist(user) {
 
     const existingWatchlist = await query.first();
     if (existingWatchlist) {
-      console.log("[Back4App] Found existing watchlist:", existingWatchlist.id);
       return existingWatchlist;
     }
 
@@ -98,9 +85,7 @@ export async function getOrCreateWatchlist(user) {
       createOwnerWritePublicReadACL(ParseInstance, currentUser),
     );
 
-    const saved = await newWatchlist.save();
-    console.log("[Back4App] Created new watchlist:", saved.id);
-    return saved;
+    return await newWatchlist.save();
   } catch (err) {
     logParseError("getOrCreateWatchlist", err);
     throw err;
@@ -112,11 +97,6 @@ export async function getUserMovies(user) {
     const ParseInstance = getBack4App();
     const currentUser = user || ParseInstance.User.current();
 
-    console.log(
-      "[Back4App] getUserMovies for user:",
-      currentUser?.id ?? "NOT_SIGNED_IN",
-    );
-
     if (!currentUser) {
       return [];
     }
@@ -127,7 +107,6 @@ export async function getUserMovies(user) {
 
     const watchlist = await watchlistQuery.first();
     if (!watchlist) {
-      console.log("[Back4App] No watchlist found for user:", currentUser.id);
       return [];
     }
 
@@ -138,9 +117,6 @@ export async function getUserMovies(user) {
     movieQuery.limit(100);
 
     const results = await movieQuery.find();
-    console.log(
-      `[Back4App] Loaded ${results.length} movies from watchlist ${watchlist.id}`,
-    );
     return results.map(mapMovieObject);
   } catch (err) {
     logParseError("getUserMovies", err);
@@ -179,7 +155,6 @@ export async function saveMovieToWatchlist(user, movieData, movieId = null) {
     movie.set("rating", movieData.rating ? Number(movieData.rating) : 0);
 
     const savedMovie = await movie.save();
-    console.log("[Back4App] Saved movie:", savedMovie.id);
     return mapMovieObject(savedMovie);
   } catch (err) {
     logParseError("saveMovieToWatchlist", err);
@@ -197,7 +172,6 @@ export async function updateMovieStatus(movieId, newStatus) {
     movie.set("status", newStatus);
 
     const updatedMovie = await movie.save();
-    console.log("[Back4App] Updated movie status:", movieId, "->", newStatus);
     return mapMovieObject(updatedMovie);
   } catch (err) {
     logParseError("updateMovieStatus", err);
@@ -213,7 +187,6 @@ export async function deleteMovie(movieId) {
 
     const movie = await query.get(movieId);
     await movie.destroy();
-    console.log("[Back4App] Deleted movie:", movieId);
   } catch (err) {
     logParseError("deleteMovie", err);
     throw err;
