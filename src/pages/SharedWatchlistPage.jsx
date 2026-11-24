@@ -7,6 +7,7 @@ import {
   Divider,
   CircularProgress,
   Alert,
+  Snackbar,
 } from "@mui/material";
 import { COLORS, FONTS } from "../components/theme";
 import { NormalButton, PrimaryButton } from "../components/Buttons";
@@ -14,6 +15,7 @@ import { BrandLogo } from "../components/BrandLogo";
 import { StatusChip } from "../components/StatusChip";
 import { UserProfileCard } from "../components/UserProfileCard";
 import { fetchSharedWatchlistByToken } from "../lib/sharing";
+import { getUserMovies, saveMovieToWatchlist } from "../lib/back4app";
 
 const SECTIONS = [
   { key: "want to watch", label: "Want to Watch" },
@@ -30,6 +32,14 @@ export function SharedWatchlistPage({
   const [data, setData] = useState({ watchlistName: "", movies: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [ownedTitles, setOwnedTitles] = useState(new Set());
+  const [addingId, setAddingId] = useState(null);
+  const [feedback, setFeedback] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   useEffect(() => {
     let mounted = true;
@@ -53,11 +63,229 @@ export function SharedWatchlistPage({
     };
   }, [token]);
 
+  useEffect(() => {
+    if (!currentUser) {
+      setOwnedTitles(new Set());
+      return;
+    }
+
+    let mounted = true;
+    getUserMovies(currentUser)
+      .then((userMovies) => {
+        if (mounted) {
+          setOwnedTitles(
+            new Set(
+              userMovies.map((m) => (m.title || "").trim().toLowerCase()),
+            ),
+          );
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      mounted = false;
+    };
+  }, [currentUser]);
+
+  async function handleAddMovieToMyWatchlist(movie) {
+    if (!currentUser || addingId) return;
+
+    setAddingId(movie.id);
+    try {
+      const ownerName = data.watchlistName
+        ? data.watchlistName.replace(/'s Watchlist$/i, "").trim()
+        : "";
+
+      await saveMovieToWatchlist(currentUser, {
+        title: movie.title,
+        description: movie.description || "",
+        genre: movie.genre || "",
+        runtime: movie.runtime_min ? String(movie.runtime_min) : "",
+        status: "Want to Watch",
+        recommendedBy: ownerName || movie.recommended_by || "",
+        rating: 0,
+      });
+
+      setOwnedTitles((prev) => {
+        const next = new Set(prev);
+        next.add((movie.title || "").trim().toLowerCase());
+        return next;
+      });
+
+      setFeedback({
+        open: true,
+        message: `"${movie.title}" added to your watchlist!`,
+        severity: "success",
+      });
+    } catch (err) {
+      setFeedback({
+        open: true,
+        message: err?.message || "Could not add this movie to your watchlist.",
+        severity: "error",
+      });
+    } finally {
+      setAddingId(null);
+    }
+  }
+
   const badgeStyle = {
     backgroundColor: "transparent",
     border: `1px solid ${COLORS.taupe}`,
     color: COLORS.cream,
   };
+
+  function renderMovieRow(movie) {
+    const normalizedTitle = (movie.title || "").trim().toLowerCase();
+    const alreadyAdded = ownedTitles.has(normalizedTitle);
+    const isAdding = addingId === movie.id;
+
+    return (
+      <Stack
+        key={movie.id}
+        direction={{ xs: "column", sm: "row" }}
+        spacing={2}
+        sx={{
+          justifyContent: "space-between",
+          alignItems: {
+            xs: "flex-start",
+            sm: "center",
+          },
+          px: 2.5,
+          py: 2,
+        }}
+      >
+        <Stack spacing={0.5} sx={{ flex: 1 }}>
+          <Typography
+            variant="body1"
+            sx={{
+              color: COLORS.cream,
+              fontWeight: FONTS.weights.bold,
+            }}
+          >
+            {movie.title}
+          </Typography>
+          {movie.description && (
+            <Typography variant="caption" sx={{ color: COLORS.taupe }}>
+              {movie.description}
+            </Typography>
+          )}
+        </Stack>
+
+        <Stack
+          direction="row"
+          spacing={1.5}
+          sx={{
+            alignItems: "center",
+            flexShrink: 0,
+            flexWrap: "wrap",
+            rowGap: 1,
+          }}
+        >
+          {movie.interest && <StatusChip label={movie.interest} />}
+
+          {currentUser &&
+            (alreadyAdded ? (
+              <NormalButton
+                disabled
+                sx={{
+                  py: 0.4,
+                  px: 1.75,
+                  backgroundColor: "transparent",
+                  borderColor: COLORS.taupe,
+                  "&.Mui-disabled": {
+                    color: COLORS.taupe,
+                    borderColor: `${COLORS.taupe}66`,
+                  },
+                  "& .MuiTypography-root": {
+                    fontSize: "16px",
+                  },
+                }}
+              >
+                In your watchlist
+              </NormalButton>
+            ) : (
+              <PrimaryButton
+                onClick={() => handleAddMovieToMyWatchlist(movie)}
+                disabled={Boolean(addingId)}
+                sx={{
+                  py: 0.4,
+                  px: 1.75,
+                  "& .MuiTypography-root": {
+                    fontSize: "16px",
+                  },
+                }}
+              >
+                {isAdding ? "Adding..." : "+ Add to watchlist"}
+              </PrimaryButton>
+            ))}
+        </Stack>
+      </Stack>
+    );
+  }
+
+  function renderSection(section) {
+    const sectionMovies = data.movies.filter((m) => m.status === section.key);
+
+    return (
+      <Paper
+        key={section.key}
+        elevation={0}
+        sx={{
+          backgroundColor: COLORS.darkGray,
+          border: `1px solid ${COLORS.taupe}44`,
+          borderRadius: 2,
+          overflow: "hidden",
+        }}
+      >
+        <Stack
+          direction="row"
+          sx={{
+            justifyContent: "space-between",
+            alignItems: "center",
+            px: 2.5,
+            py: 1.5,
+            backgroundColor: COLORS.black,
+            borderBottom: `1px solid ${COLORS.taupe}33`,
+          }}
+        >
+          <Typography
+            variant="body1"
+            sx={{
+              color: COLORS.cream,
+              fontWeight: FONTS.weights.bold,
+            }}
+          >
+            {section.label}
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{
+              color: COLORS.gold,
+              fontWeight: FONTS.weights.bold,
+            }}
+          >
+            {sectionMovies.length}
+          </Typography>
+        </Stack>
+
+        {sectionMovies.length === 0 ? (
+          <Box sx={{ px: 2.5, py: 2.5 }}>
+            <Typography variant="caption" sx={{ color: COLORS.taupe }}>
+              No movies in {section.label.toLowerCase()} yet.
+            </Typography>
+          </Box>
+        ) : (
+          <Stack
+            divider={<Divider sx={{ borderColor: `${COLORS.taupe}22` }} />}
+          >
+            {sectionMovies.map(renderMovieRow)}
+          </Stack>
+        )}
+      </Paper>
+    );
+  }
+
+  const renderedSections = SECTIONS.map(renderSection);
 
   return (
     <Box
@@ -208,117 +436,11 @@ export function SharedWatchlistPage({
 
             <Divider sx={{ borderColor: `${COLORS.taupe}44` }} />
 
-            <Stack spacing={3}>
-              {SECTIONS.map((section) => {
-                const sectionMovies = data.movies.filter(
-                  (m) => m.status === section.key,
-                );
-
-                return (
-                  <Paper
-                    key={section.key}
-                    elevation={0}
-                    sx={{
-                      backgroundColor: COLORS.darkGray,
-                      border: `1px solid ${COLORS.taupe}44`,
-                      borderRadius: 2,
-                      overflow: "hidden",
-                    }}
-                  >
-                    <Stack
-                      direction="row"
-                      sx={{
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        px: 2.5,
-                        py: 1.5,
-                        backgroundColor: COLORS.black,
-                        borderBottom: `1px solid ${COLORS.taupe}33`,
-                      }}
-                    >
-                      <Typography
-                        variant="body1"
-                        sx={{
-                          color: COLORS.cream,
-                          fontWeight: FONTS.weights.bold,
-                        }}
-                      >
-                        {section.label}
-                      </Typography>
-                      <Typography
-                        variant="body1"
-                        sx={{
-                          color: COLORS.gold,
-                          fontWeight: FONTS.weights.bold,
-                        }}
-                      >
-                        {sectionMovies.length}
-                      </Typography>
-                    </Stack>
-
-                    {sectionMovies.length === 0 ? (
-                      <Box sx={{ px: 2.5, py: 2.5 }}>
-                        <Typography
-                          variant="caption"
-                          sx={{ color: COLORS.taupe }}
-                        >
-                          No movies in {section.label.toLowerCase()} yet.
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <Stack
-                        divider={
-                          <Divider sx={{ borderColor: `${COLORS.taupe}22` }} />
-                        }
-                      >
-                        {sectionMovies.map((movie) => (
-                          <Stack
-                            key={movie.id}
-                            direction="row"
-                            spacing={2}
-                            sx={{
-                              justifyContent: "space-between",
-                              alignItems: "flex-start",
-                              px: 2.5,
-                              py: 2,
-                            }}
-                          >
-                            <Stack spacing={0.5} sx={{ flex: 1 }}>
-                              <Typography
-                                variant="body1"
-                                sx={{
-                                  color: COLORS.cream,
-                                  fontWeight: FONTS.weights.bold,
-                                }}
-                              >
-                                {movie.title}
-                              </Typography>
-                              {movie.description && (
-                                <Typography
-                                  variant="caption"
-                                  sx={{ color: COLORS.taupe }}
-                                >
-                                  {movie.description}
-                                </Typography>
-                              )}
-                            </Stack>
-
-                            {movie.interest && (
-                              <StatusChip label={movie.interest} />
-                            )}
-                          </Stack>
-                        ))}
-                      </Stack>
-                    )}
-                  </Paper>
-                );
-              })}
-            </Stack>
+            <Stack spacing={3}>{renderedSections}</Stack>
           </Stack>
         )}
       </Box>
 
-      {/* Footer CTA ("Start your own watchlist ->") */}
       <Box
         component="footer"
         sx={{
@@ -351,6 +473,27 @@ export function SharedWatchlistPage({
           </NormalButton>
         </Stack>
       </Box>
+
+      <Snackbar
+        open={feedback.open}
+        autoHideDuration={3500}
+        onClose={() => setFeedback((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setFeedback((prev) => ({ ...prev, open: false }))}
+          severity={feedback.severity}
+          sx={{
+            backgroundColor: COLORS.black,
+            color: feedback.severity === "success" ? COLORS.gold : COLORS.cream,
+            border: `1px solid ${
+              feedback.severity === "success" ? COLORS.gold : COLORS.red
+            }`,
+          }}
+        >
+          {feedback.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
