@@ -32,7 +32,7 @@ export const theme = createTheme({
       paper: COLORS.darkGray,
     },
     text: {
-      primary: COLORS.cream,
+      primary: COLORS.darkGray,
       secondary: COLORS.taupe,
     },
   },
