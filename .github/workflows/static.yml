@@ -36,7 +36,7 @@ jobs:
         run: npm ci
 
       - name: Build React app
-        run: npm run build
+        run: npm run build -- --base=/g7-popcorn/
         env:
           VITE_BACK4APP_APP_ID: ${{ secrets.VITE_BACK4APP_APP_ID }}
           VITE_BACK4APP_JS_KEY: ${{ secrets.VITE_BACK4APP_JS_KEY }}
