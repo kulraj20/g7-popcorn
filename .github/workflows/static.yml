@@ -22,6 +22,11 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
+    env:
+      VITE_BACK4APP_APPLICATION_ID: ${{ secrets.VITE_BACK4APP_APPLICATION_ID }}
+      VITE_BACK4APP_JAVASCRIPT_KEY: ${{ secrets.VITE_BACK4APP_JAVASCRIPT_KEY }}
+      VITE_BACK4APP_SERVER_URL: ${{ secrets.VITE_BACK4APP_SERVER_URL }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -35,27 +40,36 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Check Back4App env vars
-        env:
-          VITE_BACK4APP_APPLICATION_ID: ${{ secrets.VITE_BACK4APP_APPLICATION_ID }}
-          VITE_BACK4APP_JAVASCRIPT_KEY: ${{ secrets.VITE_BACK4APP_JAVASCRIPT_KEY }}
-          VITE_BACK4APP_SERVER_URL: ${{ secrets.VITE_BACK4APP_SERVER_URL }}
+      - name: Validate Back4App configuration
         run: |
-          echo "APP_ID length: ${#VITE_BACK4APP_APPLICATION_ID}"
-          echo "JAVASCRIPT_KEY length: ${#VITE_BACK4APP_JAVASCRIPT_KEY}"
-          echo "SERVER_URL: ${VITE_BACK4APP_SERVER_URL:-'(not set, will use default)'}"
+          status=0
+          if [ ${#VITE_BACK4APP_APPLICATION_ID} -ge 8 ]; then
+            echo "VITE_BACK4APP_APPLICATION_ID: OK"
+          else
+            echo "::error::VITE_BACK4APP_APPLICATION_ID is missing or too short (expected >= 8 chars)"
+            status=1
+          fi
+
+          if [ ${#VITE_BACK4APP_JAVASCRIPT_KEY} -ge 8 ]; then
+            echo "VITE_BACK4APP_JAVASCRIPT_KEY: OK"
+          else
+            echo "::error::VITE_BACK4APP_JAVASCRIPT_KEY is missing or too short (expected >= 8 chars)"
+            status=1
+          fi
+
+          if [ -n "$VITE_BACK4APP_SERVER_URL" ]; then
+            echo "VITE_BACK4APP_SERVER_URL: OK (custom)"
+          else
+            echo "VITE_BACK4APP_SERVER_URL: OK (using default)"
+          fi
+
+          exit $status
 
       - name: Build React app
         run: npm run build -- --base=/g7-popcorn/
-        env:
-          VITE_BACK4APP_APPLICATION_ID: ${{ secrets.VITE_BACK4APP_APPLICATION_ID }}
-          VITE_BACK4APP_JAVASCRIPT_KEY: ${{ secrets.VITE_BACK4APP_JAVASCRIPT_KEY }}
-          VITE_BACK4APP_SERVER_URL: ${{secrets.VITE_BACK4APP_SERVER_URL}}
 
       - name: Verify build files
-        run: |
-          ls -la dist
-          test -f dist/index.html
+        run: test -f dist/index.html
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
