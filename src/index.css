@@ -1,0 +1,22 @@
+:root {
+  font-family: Calibri, Arial, sans-serif;
+  color: #f5f2ea;
+  background: #1e1e1e;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+
+  --popcorn-black: #0e0e0e;
+  --popcorn-red: #f04a4a;
+  --popcorn-gold: #d2a956;
+  --popcorn-cream: #f5f2ea;
+  --popcorn-charcoal: #272727;
+  --popcorn-muted: #a7a398;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: #1e1e1e;
+  color: #f5f2ea;
+}
