@@ -2,15 +2,14 @@ import { useMemo, useRef, useState } from "react";
 import {
   Alert,
   Box,
+  Chip,
   CircularProgress,
   Divider,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  MenuItem,
   Paper,
-  Select,
   Stack,
   Typography,
 } from "@mui/material";
@@ -25,22 +24,32 @@ const STATUS_OPTIONS = ["Want to Watch", "Watching", "Watched"];
 
 const BASE_GENRES = ["Action", "Comedy", "Drama", "Sci-Fi", "Horror", "Serial"];
 
-const selectSx = {
-  backgroundColor: COLORS.cream,
-  color: COLORS.darkGray,
+const QUICK_FILTERS = [
+  { value: "All", label: "All ratings" },
+  { value: "4", label: "4+ stars" },
+  { value: "3", label: "3+ stars" },
+];
+
+const SORT_OPTIONS = [
+  { value: "newest", label: "Newest" },
+  { value: "title", label: "Title" },
+  { value: "rating", label: "Top rated" },
+];
+
+const quickChipSx = (selected) => ({
+  height: 34,
+  borderRadius: "999px",
+  borderColor: selected ? COLORS.gold : `${COLORS.taupe}88`,
+  backgroundColor: selected ? COLORS.gold : "transparent",
+  color: selected ? COLORS.black : COLORS.cream,
   fontFamily: FONTS.family,
-  fontSize: "17px",
-  borderRadius: 1.5,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: COLORS.taupe,
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
+  fontWeight: FONTS.weights.bold,
+  "&:hover": {
     borderColor: COLORS.gold,
+    backgroundColor: selected ? COLORS.gold : `${COLORS.gold}18`,
   },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: COLORS.gold,
-  },
-};
+  "& .MuiChip-label": { px: 1.5 },
+});
 
 export function WatchlistSection({
   user,
@@ -58,8 +67,8 @@ export function WatchlistSection({
 
   const [genreFilter, setGenreFilter] = useState("All");
   const [ratingFilter, setRatingFilter] = useState("All");
-  const [runtimeFilter, setRuntimeFilter] = useState("All");
   const [sortBy, setSortBy] = useState("newest");
+  const [sortDirection, setSortDirection] = useState("desc");
 
   const boardRef = useRef(null);
 
@@ -99,15 +108,25 @@ export function WatchlistSection({
   const handleResetFilters = () => {
     setGenreFilter("All");
     setRatingFilter("All");
-    setRuntimeFilter("All");
     setSortBy("newest");
+    setSortDirection("desc");
+  };
+
+  const handleSortChange = (nextSortBy) => {
+    if (sortBy === nextSortBy) {
+      setSortDirection((current) => (current === "asc" ? "desc" : "asc"));
+      return;
+    }
+
+    setSortBy(nextSortBy);
+    setSortDirection(nextSortBy === "title" ? "asc" : "desc");
   };
 
   const hasActiveFilters =
     genreFilter !== "All" ||
     ratingFilter !== "All" ||
-    runtimeFilter !== "All" ||
-    sortBy !== "newest";
+    sortBy !== "newest" ||
+    sortDirection !== "desc";
 
   const availableGenres = useMemo(() => {
     const customGenres = movies.map((m) => m.genre).filter(Boolean);
@@ -127,46 +146,37 @@ export function WatchlistSection({
         }
       }
 
-      if (runtimeFilter !== "All") {
-        const mins = parseInt(movie.runtime, 10);
-        if (Number.isNaN(mins)) return false;
-        if (runtimeFilter === "short" && mins >= 90) return false;
-        if (runtimeFilter === "medium" && (mins < 90 || mins > 120))
-          return false;
-        if (runtimeFilter === "long" && mins <= 120) return false;
-      }
-
       return true;
     });
 
     const sorted = [...filtered];
 
     switch (sortBy) {
-      case "title-asc":
-        sorted.sort((a, b) => a.title.localeCompare(b.title));
+      case "title": {
+        const direction = sortDirection === "asc" ? 1 : -1;
+        sorted.sort(
+          (a, b) => direction * a.title.localeCompare(b.title),
+        );
         break;
-      case "title-desc":
-        sorted.sort((a, b) => b.title.localeCompare(a.title));
+      }
+      case "rating": {
+        const direction = sortDirection === "desc" ? -1 : 1;
+        sorted.sort(
+          (a, b) => direction * ((a.rating || 0) - (b.rating || 0)),
+        );
         break;
-      case "rating-desc":
-        sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-        break;
-      case "runtime-asc":
-        sorted.sort((a, b) => {
-          const minsA = parseInt(a.runtime, 10);
-          const minsB = parseInt(b.runtime, 10);
-          return (
-            (Number.isNaN(minsA) ? Infinity : minsA) -
-            (Number.isNaN(minsB) ? Infinity : minsB)
-          );
-        });
+      }
+      case "newest":
+        if (sortDirection === "asc") {
+          sorted.reverse();
+        }
         break;
       default:
         break;
     }
 
     return sorted;
-  }, [movies, genreFilter, ratingFilter, runtimeFilter, sortBy]);
+  }, [movies, genreFilter, ratingFilter, sortBy, sortDirection]);
 
   const nextMovies = movies
     .filter((movie) => movie.status === "Want to Watch")
@@ -207,108 +217,136 @@ export function WatchlistSection({
             >
               Filters and sorting
             </Typography>
-            {hasActiveFilters && (
-              <NormalButton
-                onClick={handleResetFilters}
-                sx={{ py: 0.25, px: 2 }}
-              >
-                Reset
-              </NormalButton>
-            )}
           </Stack>
 
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr 1fr", md: "repeat(4, 1fr)" },
-              gap: 2,
-            }}
-          >
-            <Stack spacing={0.5}>
+          <Stack spacing={2}>
+            <Stack spacing={0.75}>
               <Typography
                 variant="caption"
                 sx={{ color: COLORS.taupe, fontSize: "14px" }}
               >
                 GENRE
               </Typography>
-              <Select
-                size="small"
-                value={genreFilter}
-                onChange={(e) => setGenreFilter(e.target.value)}
-                sx={selectSx}
-              >
-                <MenuItem value="All">All genres</MenuItem>
-                {availableGenres.map((genre) => (
-                  <MenuItem key={genre} value={genre}>
-                    {genre}
-                  </MenuItem>
-                ))}
-              </Select>
+              <Stack direction="row" useFlexGap flexWrap="wrap" spacing={1}>
+                {["All", ...availableGenres].map((genre) => {
+                  const selected = genreFilter === genre;
+                  return (
+                    <Chip
+                      key={genre}
+                      label={genre === "All" ? "All genres" : genre}
+                      clickable
+                      aria-pressed={selected}
+                      onClick={() => setGenreFilter(genre)}
+                      variant={selected ? "filled" : "outlined"}
+                      sx={quickChipSx(selected)}
+                    />
+                  );
+                })}
+              </Stack>
             </Stack>
 
-            <Stack spacing={0.5}>
-              <Typography
-                variant="caption"
-                sx={{ color: COLORS.taupe, fontSize: "14px" }}
-              >
-                RATING
-              </Typography>
-              <Select
-                size="small"
-                value={ratingFilter}
-                onChange={(e) => setRatingFilter(e.target.value)}
-                sx={selectSx}
-              >
-                <MenuItem value="All">All ratings</MenuItem>
-                {[5, 4, 3, 2, 1].map((rating) => (
-                  <MenuItem key={rating} value={String(rating)}>
-                    {rating}+ stars
-                  </MenuItem>
-                ))}
-              </Select>
-            </Stack>
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={{ xs: 2, sm: 3 }}
+              alignItems={{ xs: "flex-start", sm: "flex-end" }}
+            >
+              <Stack spacing={0.75}>
+                <Typography
+                  variant="caption"
+                  sx={{ color: COLORS.taupe, fontSize: "14px" }}
+                >
+                  RATING
+                </Typography>
+                <Stack direction="row" useFlexGap flexWrap="wrap" spacing={1}>
+                  {QUICK_FILTERS.map(({ value, label }) => {
+                    const selected = ratingFilter === value;
+                    return (
+                      <Chip
+                        key={value}
+                        label={label}
+                        clickable
+                        aria-pressed={selected}
+                        onClick={() => setRatingFilter(value)}
+                        variant={selected ? "filled" : "outlined"}
+                        sx={quickChipSx(selected)}
+                      />
+                    );
+                  })}
+                </Stack>
+              </Stack>
 
-            <Stack spacing={0.5}>
-              <Typography
-                variant="caption"
-                sx={{ color: COLORS.taupe, fontSize: "14px" }}
-              >
-                RUNTIME
-              </Typography>
-              <Select
-                size="small"
-                value={runtimeFilter}
-                onChange={(e) => setRuntimeFilter(e.target.value)}
-                sx={selectSx}
-              >
-                <MenuItem value="All">All runtimes</MenuItem>
-                <MenuItem value="short">Under 90 min</MenuItem>
-                <MenuItem value="medium">90 – 120 min</MenuItem>
-                <MenuItem value="long">Over 120 min</MenuItem>
-              </Select>
+              <Stack spacing={0.75}>
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  alignItems="center"
+                  sx={{ minHeight: 20 }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{ color: COLORS.taupe, fontSize: "14px" }}
+                  >
+                    SORT BY
+                  </Typography>
+                </Stack>
+                <Stack direction="row" useFlexGap flexWrap="wrap" spacing={1}>
+                  {SORT_OPTIONS.map(({ value, label }) => {
+                    const selected = sortBy === value;
+                    const directionLabel =
+                      sortDirection === "asc" ? "ascending" : "descending";
+                    const chipLabel = selected
+                      ? `${label} ${sortDirection === "asc" ? "↑" : "↓"}`
+                      : label;
+                    return (
+                      <Chip
+                        key={value}
+                        label={chipLabel}
+                        clickable
+                        aria-pressed={selected}
+                        aria-label={
+                          selected
+                            ? `${label}, sorted ${directionLabel}. Click to reverse order.`
+                            : `Sort by ${label}`
+                        }
+                        onClick={() => handleSortChange(value)}
+                        variant={selected ? "filled" : "outlined"}
+                        sx={quickChipSx(selected)}
+                      />
+                    );
+                  })}
+                  {hasActiveFilters && (
+                    <Chip
+                      label="Reset All"
+                      clickable
+                      onClick={handleResetFilters}
+                      aria-label="Reset filters and sorting"
+                      variant="outlined"
+                      sx={{
+                        height: 34,
+                        ml: 2,
+                        borderStyle: "dashed",
+                        borderColor: `${COLORS.gold}99`,
+                        backgroundColor: `${COLORS.gold}12`,
+                        color: COLORS.gold,
+                        fontFamily: FONTS.family,
+                        fontSize: "13px",
+                        fontWeight: FONTS.weights.bold,
+                        "&:hover": {
+                          borderColor: COLORS.gold,
+                          backgroundColor: `${COLORS.gold}24`,
+                          color: COLORS.cream,
+                        },
+                        "& .MuiChip-label": {
+                          px: 1.75,
+                          fontWeight: FONTS.weights.bold,
+                        },
+                      }}
+                    />
+                  )}
+                </Stack>
+              </Stack>
             </Stack>
-
-            <Stack spacing={0.5}>
-              <Typography
-                variant="caption"
-                sx={{ color: COLORS.taupe, fontSize: "14px" }}
-              >
-                SORT BY
-              </Typography>
-              <Select
-                size="small"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                sx={selectSx}
-              >
-                <MenuItem value="newest">Newest added</MenuItem>
-                <MenuItem value="title-asc">Title (A–Z)</MenuItem>
-                <MenuItem value="title-desc">Title (Z–A)</MenuItem>
-                <MenuItem value="rating-desc">Highest rated</MenuItem>
-                <MenuItem value="runtime-asc">Shortest runtime</MenuItem>
-              </Select>
-            </Stack>
-          </Box>
+          </Stack>
         </Stack>
       </Paper>
 
@@ -325,7 +363,7 @@ export function WatchlistSection({
               display: "grid",
               gridTemplateColumns: {
                 xs: "1fr",
-                md: activeStatus ? "1fr" : "repeat(3, minmax(0, 1fr))",
+                md: "1fr",
               },
               gap: 3,
               alignItems: "start",
@@ -341,13 +379,11 @@ export function WatchlistSection({
                   key={statusName}
                   elevation={0}
                   sx={{
-                    backgroundColor: COLORS.black,
-                    border: `1px solid ${COLORS.taupe}44`,
-                    borderRadius: 2,
-                    p: 2,
+                    backgroundColor: "transparent",
+                    p: 0,
                   }}
                 >
-                  <Stack spacing={2}>
+                  <Stack spacing={1.5}>
                     <Stack
                       direction="row"
                       sx={{
@@ -401,17 +437,13 @@ export function WatchlistSection({
                     ) : (
                       <Stack
                         spacing={2}
-                        useFlexGap
-                        direction={{
-                          xs: "column",
-                          md: activeStatus ? "row" : "column",
-                        }}
-                        sx={{ flexWrap: "wrap", alignItems: "flex-start" }}
+                        sx={{ alignItems: "stretch" }}
                       >
                         {columnMovies.map((movie) => (
                           <MovieCard
                             key={movie.id}
                             title={movie.title}
+                            genre={movie.genre}
                             status={movie.status}
                             description={movie.description}
                             rating={movie.rating}
@@ -428,10 +460,7 @@ export function WatchlistSection({
                               moveMovie(movie.id, newStatus)
                             }
                             sx={{
-                              width: {
-                                xs: "100%",
-                                md: activeStatus ? 420 : "100%",
-                              },
+                              width: "100%",
                             }}
                           />
                         ))}

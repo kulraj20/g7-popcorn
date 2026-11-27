@@ -132,10 +132,7 @@ const AddMovieForm = ({ todo = null, onClose, onSave }) => {
           genre: formData.genre.trim(),
           runtime: String(formData.runtime).trim(),
           recommendedBy: formData.recommendedBy.trim(),
-          rating:
-            formData.status === "Watched" && formData.rating
-              ? Number(formData.rating)
-              : 0,
+          rating: formData.rating ? Number(formData.rating) : 0,
         });
         setSuccessMessage(todo ? "Movie updated" : "Movie added");
       }

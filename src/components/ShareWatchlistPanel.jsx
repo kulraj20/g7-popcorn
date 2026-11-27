@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Paper, Stack, Typography, Snackbar, Alert, Box } from "@mui/material";
 import { COLORS, FONTS } from "./theme";
 import { NormalButton, PrimaryButton } from "./Buttons";
@@ -122,19 +122,17 @@ export function ShareWatchlistPanel({
           spacing={1.5}
           sx={{
             minWidth: { xs: "100%", md: 210 },
-            width: "100%",
+            width: { xs: "100%", md: "fit-content" },
             maxWidth: { xs: "none", md: 280 },
             justifySelf: "center",
-            flexDirection: { xs: "column-reverse", md: "column" },
           }}
         >
-          <NormalButton onClick={handleCopyShareLink} disabled={loading}>
-            {loading ? "Generating..." : "Share Watchlist"}
-          </NormalButton>
           <PrimaryButton
             onClick={onAddMovieClick}
             sx={{
-              minHeight: 44,
+              width: "100%",
+              minHeight: 48,
+              px: { xs: 2, md: 2.5 },
               backgroundColor: COLORS.gold,
               borderColor: COLORS.gold,
               color: COLORS.black,
@@ -157,6 +155,23 @@ export function ShareWatchlistPanel({
           >
             + Add Movie
           </PrimaryButton>
+          <NormalButton
+            onClick={handleCopyShareLink}
+            disabled={loading}
+            sx={{
+              minHeight: 40,
+              backgroundColor: "transparent",
+              color: COLORS.taupe,
+              borderColor: `${COLORS.taupe}88`,
+              "&:hover": {
+                backgroundColor: `${COLORS.taupe}12`,
+                color: COLORS.cream,
+                borderColor: COLORS.cream,
+              },
+            }}
+          >
+            {loading ? "Generating..." : "Share Watchlist"}
+          </NormalButton>
         </Stack>
         <Box
           sx={{
